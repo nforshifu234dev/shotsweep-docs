@@ -1,0 +1,70 @@
+name: Visual Regression (Deployment)
+
+on:
+  deployment_status:
+
+jobs:
+  visual-regression:
+    if: github.event.deployment_status.state == 'success'
+    name: Visual regression
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve deploy URL
+        id: url
+        run: |
+          echo '${{ toJson(github.event.deployment_status) }}'
+          URL="${{ github.event.deployment_status.environment_url }}"
+          if [ -z "$URL" ]; then
+            URL="${{ github.event.deployment_status.target_url }}"
+          fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Resolved deploy URL: $URL"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install shotsweep
+        run: npm install -g @nfsfu234/shotsweep
+
+      - name: Capture light mode
+        run: |
+          shotsweep capture \
+            --sitemap ${{ steps.url.outputs.url }}/sitemap.xml \
+            --out ./screenshots/current/light
+
+      - name: Capture dark mode
+        run: |
+          shotsweep capture \
+            --sitemap ${{ steps.url.outputs.url }}/sitemap.xml \
+            --out ./screenshots/current/dark \
+            --dark
+
+      - name: Compare light mode
+        run: |
+          shotsweep diff \
+            ./screenshots/baseline/light/manifest.json \
+            ./screenshots/current/light/manifest.json \
+            --summary --text ./diff/light-summary.txt
+
+      - name: Compare dark mode
+        run: |
+          shotsweep diff \
+            ./screenshots/baseline/dark/manifest.json \
+            ./screenshots/current/dark/manifest.json \
+            --summary --text ./diff/dark-summary.txt
+
+      - name: Upload visual regression artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-results
+          path: |
+            diff/
+            screenshots/current/
+          if-no-files-found: ignore

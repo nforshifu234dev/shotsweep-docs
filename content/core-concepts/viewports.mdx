@@ -1,0 +1,43 @@
+---
+title: Viewports
+description: Capture responsive screenshots across multiple named or custom viewports.
+---
+
+# Viewports
+
+`--viewport` is repeatable, so one run can capture as many sizes as you need:
+
+```bash filename="terminal"
+shotsweep capture \
+  --url https://example.com \
+  --viewport 1440x900 \
+  --viewport 1024x768 \
+  --viewport 390x844
+```
+
+## Presets
+
+Three named presets are built in:
+
+| Preset | Size |
+| --- | --- |
+| `desktop` | 1440 × 900 |
+| `tablet` | 768 × 1024 |
+| `mobile` | 390 × 844 |
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --viewport desktop --viewport mobile
+```
+
+If no `--viewport` is given, ShotSweep defaults to `desktop` (1440×900).
+
+## Dark mode
+
+Add `--dark` to emulate `prefers-color-scheme: dark` while capturing:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --dark
+```
+
+Every viewport × mode combination becomes its own job — `--viewport` × `--mode` — so pair this
+page with [Full-Page & Sectioned Capture](/docs/core-concepts/capture) when planning a run.

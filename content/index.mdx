@@ -1,0 +1,61 @@
+---
+title: Introduction
+description: A developer-first CLI for automated website screenshots, visual comparisons, authenticated pages, and AI-ready capture workflows.
+---
+
+import { Cards } from 'nextra/components'
+
+# NFSFU234 ShotSweep
+
+**Capture. Compare. Inspect. Ship.**
+
+ShotSweep is a developer-first CLI for automated website screenshots, visual comparisons,
+authenticated pages, and AI-assisted workflows.
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com
+```
+
+```text
+✔ Resolved 1 URL
+✔ Captured 1 screenshot → ./screenshots
+Done in 2.4s
+Manifest: screenshots/manifest.json
+```
+
+## The problem
+
+Visual regressions are easy to miss. A page can:
+
+- technically build successfully
+- pass unit tests
+- pass API tests
+- pass Lighthouse
+- return HTTP 200
+
+…and still look broken.
+
+## What ShotSweep gives you
+
+```text
+URL / paths / CSV / sitemap
+          ↓
+      ShotSweep
+          ↓
+   Browser capture
+          ↓
+ screenshots + manifest
+          ↓
+   diff / AI review / CI
+```
+
+ShotSweep doesn't replace your testing stack. It adds the **visual layer**.
+
+## Where to go next
+
+<Cards>
+  <Cards.Card title="Installation" href="/docs/installation" />
+  <Cards.Card title="Quick Start" href="/docs/quick-start" />
+  <Cards.Card title="Core Concepts" href="/docs/core-concepts/inputs" />
+  <Cards.Card title="CLI Reference" href="/docs/cli-reference" />
+</Cards>

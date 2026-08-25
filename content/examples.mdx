@@ -1,0 +1,204 @@
+---
+title: Examples
+description: What each capture mode actually produces — command in, screenshot out.
+---
+
+import { ExampleImage } from '../app/components/ExampleImage.jsx'
+import { ExampleGallery } from '../app/components/ExampleGallery.jsx'
+
+# Examples
+
+Every example below shows the command you run and the files ShotSweep produces. The examples use
+real sites from the NFSFU234 open-source ecosystem — [TourGuide](https://tour-guide.nforshifu234dev.com)
+and [FormValidation](https://form-validation.nforshifu234dev.com).
+
+Each example writes to its **own** output folder. This matters because captures of the same page
+and viewport use the same filename (`full-<W>x<H>.png`), so writing light and dark captures to the
+same folder can cause one run to overwrite the other.
+
+## Full-page capture
+
+```bash filename="terminal"
+shotsweep capture \
+  --url https://tour-guide.nforshifu234dev.com \
+  --mode full \
+  --out ./public/screenshots/full-page
+```
+
+<ExampleImage
+  src="/screenshots/full-page/tour-guide.nforshifu234dev.com/home/full-1440x900.png"
+  alt="Full-page screenshot of the TourGuide landing page"
+  caption="A full-page capture of the TourGuide landing page, stitched into one tall image."
+/>
+
+Full-page mode captures the page from top to bottom instead of limiting the result to the initial
+viewport.
+
+## Sectioned capture
+
+```bash filename="terminal"
+shotsweep capture \
+  --url https://tour-guide.nforshifu234dev.com \
+  --mode sections \
+  --out ./public/screenshots/sections \
+  --debug
+```
+
+Sectioned mode divides the page into viewport-sized screenshots based on the page's measured
+scrollable height.
+
+`--debug` is useful when you want to inspect what ShotSweep measured during capture, especially
+when a page contains content that loads or expands after the initial render.
+
+<ExampleGallery
+  columns={3}
+  images={[
+    {
+      src: '/screenshots/sections/tour-guide.nforshifu234dev.com/home/section-01-1440x900.png',
+      alt: 'Section 1 of the TourGuide landing page',
+      caption: 'Section 01 — top of the page'
+    },
+    {
+      src: '/screenshots/sections/tour-guide.nforshifu234dev.com/home/section-06-1440x900.png',
+      alt: 'Section 6 of the TourGuide landing page',
+      caption: 'Section 06 — captured section'
+    },
+    {
+      src: '/screenshots/sections/tour-guide.nforshifu234dev.com/home/section-02-1440x900.png',
+      alt: 'Section 2 of the TourGuide landing page',
+      caption: 'Section 02 — captured section'
+    }
+  ]}
+  note="The number of sections depends on the page's measured scroll height and the capture viewport. Use the debug output or manifest.json to inspect the sections produced by a run."
+/>
+
+## Capturing a whole sitemap
+
+```bash filename="terminal"
+shotsweep capture \
+  --sitemap https://tour-guide.nforshifu234dev.com/sitemap.xml \
+  --out ./public/screenshots/sitemap
+```
+
+Instead of supplying one URL, you can give ShotSweep a sitemap. It discovers the URLs listed in
+that sitemap and captures each page into the output directory.
+
+<ExampleGallery
+  columns={2}
+  images={[
+    {
+      caption: 'Home — /',
+      src: '/screenshots/sitemap/tour-guide.nforshifu234dev.com/home/full-1440x900.png'
+    },
+    {
+      caption: 'Getting Started — /getting-started',
+      src: '/screenshots/sitemap/tour-guide.nforshifu234dev.com/getting-started/full-1440x900.png'
+    },
+    {
+      caption: 'API Reference — /api-reference',
+      src: '/screenshots/sitemap/tour-guide.nforshifu234dev.com/api-reference/full-1440x900.png'
+    },
+    {
+      caption: 'Examples — /examples',
+      src: '/screenshots/sitemap/tour-guide.nforshifu234dev.com/examples/full-1440x900.png'
+    }
+  ]}
+  note="Each URL from the sitemap gets its own capture directory, making large documentation sites practical to capture in one command."
+/>
+
+## Multiple viewports in one run
+
+```bash filename="terminal"
+shotsweep capture \
+  --url https://form-validation.nforshifu234dev.com \
+  --viewport desktop --viewport mobile \
+  --out ./public/screenshots/viewports
+```
+
+You can request multiple viewport presets in the same capture. ShotSweep runs the capture for each
+viewport and keeps the resulting screenshots separate by their dimensions.
+
+<ExampleGallery
+  columns={2}
+  images={[
+    {
+      src: '/screenshots/viewports/form-validation.nforshifu234dev.com/home/full-1440x900.png',
+      alt: 'FormValidation captured at the desktop viewport',
+      caption: 'Desktop — 1440×900'
+    },
+    {
+      src: '/screenshots/viewports/form-validation.nforshifu234dev.com/home/full-390x844.png',
+      alt: 'FormValidation captured at the mobile viewport',
+      caption: 'Mobile — 390×844'
+    }
+  ]}
+  note="The viewport dimensions are part of the output filename, so captures from different viewport sizes can coexist in the same output tree."
+/>
+
+## Dark mode
+
+```bash filename="terminal"
+shotsweep capture \
+  --url https://form-validation.nforshifu234dev.com \
+  --dark \
+  --out ./public/screenshots/dark
+```
+
+<ExampleImage
+  src="/screenshots/dark/form-validation.nforshifu234dev.com/home/full-1440x900.png"
+  alt="FormValidation site captured with dark color-scheme preference"
+  caption="The page captured with the browser's prefers-color-scheme preference set to dark."
+/>
+
+`--dark` captures the page with a dark color-scheme preference, allowing sites that respond to
+`prefers-color-scheme: dark` to render their dark theme during capture.
+
+## Visual diff
+
+```bash filename="terminal"
+shotsweep capture \
+  --url https://form-validation.nforshifu234dev.com \
+  --out ./public/screenshots/diff/before
+
+shotsweep capture \
+  --url https://form-validation.nforshifu234dev.com \
+  --dark \
+  --out ./public/screenshots/diff/after
+
+shotsweep diff \
+  ./public/screenshots/diff/before/manifest.json \
+  ./public/screenshots/diff/after/manifest.json \
+  --out ./public/screenshots/diff/result
+```
+
+The `diff` command compares two capture manifests and produces visual comparison artifacts for
+pages that differ between the two runs.
+
+For this example, the two runs intentionally use different color-scheme preferences, so the
+result demonstrates what a visual change looks like rather than representing a typical
+before/after regression test.
+
+<ExampleGallery
+  columns={3}
+  images={[
+    {
+      caption: 'Run A — light mode',
+      src: '/screenshots/diff/result/http_form_validation_nforshifu234dev_com_3000_1440x900_full_1440x900_png/old.png'
+    },
+    {
+      caption: 'Run B — dark mode',
+      src: '/screenshots/diff/result/http_form_validation_nforshifu234dev_com_3000_1440x900_full_1440x900_png/new.png'
+    },
+    {
+      caption: 'Diff — pixels that changed between the runs',
+      src: '/screenshots/diff/result/http_form_validation_nforshifu234dev_com_3000_1440x900_full_1440x900_png/diff.png'
+    }
+  ]}
+  note="The diff output groups comparison artifacts by page. The exact generated folder name depends on the captured URL and viewport; use diff-report.json or inspect the result directory to locate old.png, new.png, and diff.png."
+/>
+
+## Next steps
+
+- [Quick Start](/docs/quick-start) — run your first capture
+- [Diffing Two Runs](/docs/visual-comparison/diff) — understand how two capture runs are compared
+- [Recipes](/docs/recipes) — more copy-paste commands

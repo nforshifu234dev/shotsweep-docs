@@ -1,0 +1,69 @@
+---
+title: Recipes
+description: Copy-paste workflows for common ShotSweep tasks.
+---
+
+# Recipes
+
+### Capture a website
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com
+```
+
+### Capture multiple routes
+
+```bash filename="terminal"
+shotsweep capture --urls paths.json
+```
+
+### Capture a local Next.js app
+
+```bash filename="terminal"
+shotsweep capture --base http://localhost:3000 --paths paths.json
+```
+
+### Capture mobile + desktop in one run
+
+```bash filename="terminal"
+shotsweep capture \
+  --url https://example.com \
+  --viewport 1440x900 \
+  --viewport 390x844
+```
+
+### Capture authenticated pages
+
+```bash filename="terminal"
+shotsweep login \
+  --login-url https://example.com/login \
+  --email-selector "#email" \
+  --password-selector "#password" \
+  --submit-selector "button[type=submit]"
+
+shotsweep capture --sitemap https://example.com/sitemap.xml --session auth.json
+```
+
+### Capture a very long page in sections
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --mode sections
+```
+
+### Generate an AI-ready summary
+
+```bash filename="terminal"
+shotsweep capture --urls paths.json --describe
+```
+
+### Debug a failing page
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --debug
+```
+
+### Compare two runs before shipping
+
+```bash filename="terminal"
+shotsweep diff old/manifest.json new/manifest.json
+```

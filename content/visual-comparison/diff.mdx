@@ -1,0 +1,212 @@
+---
+title: Diffing Two Runs
+description: Pixel-compare two capture runs and catch what a deploy actually changed.
+---
+
+# Diffing two runs
+
+```bash filename="terminal"
+shotsweep capture --sitemap https://example.com/sitemap.xml --out ./before
+shotsweep capture --sitemap https://example.com/sitemap.xml --out ./after
+shotsweep diff ./before/manifest.json ./after/manifest.json --out ./diff --zip
+```
+
+```text
+Old capture
+     ↓
+New capture
+     ↓
+ShotSweep diff
+     ↓
+Changed images + report
+```
+
+`shotsweep diff` matches screenshots between the two manifests by URL and viewport, then
+pixel-diffs each pair.
+
+Every changed page gets its own folder under `--out`, containing:
+
+* `old.png`
+* `new.png`
+* `diff.png`
+
+plus a top-level `diff-report.json` with the full summary and per-page results.
+
+`--zip` bundles the whole diff output into a single archive.
+
+## Why pixel comparison?
+
+`shotsweep diff` uses pixel comparison rather than ML or visual guessing. This makes the result
+deterministic and suitable for local development and CI.
+
+## Threshold
+
+`--threshold` controls how much of an image must differ before a matched page is classified as
+`changed`.
+
+It accepts three forms:
+
+```bash filename="terminal"
+shotsweep diff old/manifest.json new/manifest.json --threshold 0.005
+shotsweep diff old/manifest.json new/manifest.json --threshold "0.5%"
+shotsweep diff old/manifest.json new/manifest.json --threshold loose
+```
+
+| Form       | Example                      | Meaning                                                                  |
+| ---------- | ---------------------------- | ------------------------------------------------------------------------ |
+| Raw ratio  | `0.001`                      | Fraction of pixels that may differ before the page is considered changed |
+| Percentage | `"0.1%"`                     | Same threshold expressed as a percentage                                 |
+| Preset     | `strict`, `default`, `loose` | Convenience presets for different comparison sensitivity                 |
+
+The threshold controls pixel matching. It is separate from the regression policy.
+
+In other words:
+
+* Threshold answers: "How much visual difference counts as a changed image?"
+* Regression policy answers: "Which result statuses should fail the command?"
+
+All threshold forms work from the CLI or config file.
+
+See [Config File](/docs/cli-reference#config-file).
+
+## Result statuses
+
+Each matched or unmatched screenshot resolves to one status:
+
+| Status         | Meaning                                       |
+| -------------- | --------------------------------------------- |
+| `unchanged`    | Difference is within the configured threshold |
+| `changed`      | Difference exceeds the configured threshold   |
+| `added`        | Present in the new manifest only              |
+| `removed`      | Present in the old manifest only              |
+| `size-changed` | Image dimensions differ between runs          |
+
+## Regression policy
+
+ShotSweep distinguishes between a visual regression and a structural change.
+
+By default, the following policy is used:
+
+| Result         | Regression | CI result |
+| -------------- | ---------- | --------- |
+| `changed`      | Yes        | ❌ Fail    |
+| `size-changed` | Yes        | ❌ Fail    |
+| `unchanged`    | No         | ✅ Pass    |
+| `added`        | No         | ✅ Pass    |
+| `removed`      | No         | ✅ Pass    |
+
+A `changed` result means the pixels changed beyond the configured threshold.
+A `size-changed` result means the screenshot dimensions changed.
+
+Added and removed pages are reported in `diff-report.json` but do not fail the
+diff by default. This allows intentional additions and removals to be reviewed
+without making every site-structure change a visual-regression failure.
+
+For example:
+
+```text
+Visual regression summary
+=========================
+
+2 regressions
+
+  Changed   : 1
+  Resized   : 1
+  Unchanged : 24
+  Added     : 0
+  Removed   : 0
+```
+
+In this example, the diff exits with code `1` because there is one changed page
+and one resized page.
+
+A run containing only added or removed pages exits successfully:
+
+```text
+Visual regression summary
+=========================
+
+0 regressions
+
+  Changed   : 0
+  Resized   : 0
+  Unchanged : 25
+  Added     : 0
+  Removed   : 1
+```
+
+This policy is intended to work well both locally and in CI/CD pipelines.
+Teams can inspect added or removed pages while still using `changed` and
+`size-changed` as the default merge-blocking visual failures.
+
+## Summary output
+
+Use `--summary` for a human-readable terminal summary:
+
+```bash filename="terminal"
+shotsweep diff old/manifest.json new/manifest.json --summary
+```
+
+Example:
+
+```text
+Visual regression summary
+=========================
+
+2 regressions
+
+  Changed   : 1
+  Resized   : 1
+  Unchanged : 24
+  Added     : 0
+  Removed   : 0
+
+Report: diff\diff-report.json
+```
+
+## Text output
+
+Use `--text` to save the human-readable summary to a file.
+
+The option accepts a destination path, which makes it useful for CI artifacts:
+
+```bash filename="terminal"
+shotsweep diff \
+  old/manifest.json \
+  new/manifest.json \
+  --text ./reports/visual-summary.txt
+```
+
+Parent directories are created automatically when necessary.
+
+You can combine it with `--summary`:
+
+```bash filename="terminal"
+shotsweep diff \
+  old/manifest.json \
+  new/manifest.json \
+  --summary \
+  --text ./reports/visual-summary.txt
+```
+
+Use JSON when another program needs structured data, and text when the report is primarily for
+humans.
+
+See [JSON Output](/docs/automation/json-output).
+
+## Exit code
+
+`diff` exits non-zero when the run contains any `changed` or `size-changed`
+result.
+
+`added` and `removed` results are reported but do not fail the diff by default.
+
+This makes the default CI policy:
+
+* `changed` → fail
+* `size-changed` → fail
+* `unchanged` → pass
+* `added` → pass
+* `removed` → pass
+
+See [CI/CD](/docs/automation/ci-cd) for a full workflow example.

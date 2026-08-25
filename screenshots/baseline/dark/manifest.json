@@ -1,0 +1,218 @@
+[
+  {
+    "url": "http://localhost:3000/contact",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\contact\\full-1440x900.png",
+    "sizeBytes": 102580,
+    "timestamp": "2026-08-14T16:55:44.710Z"
+  },
+  {
+    "url": "http://localhost:3000/about",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\about\\full-1440x900.png",
+    "sizeBytes": 1292268,
+    "timestamp": "2026-08-14T16:55:51.481Z"
+  },
+  {
+    "url": "http://localhost:3000",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\home\\full-1440x900.png",
+    "sizeBytes": 560279,
+    "timestamp": "2026-08-14T16:55:58.327Z"
+  },
+  {
+    "url": "http://localhost:3000/docs",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs\\full-1440x900.png",
+    "sizeBytes": 169005,
+    "timestamp": "2026-08-14T16:56:04.886Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/ai-workflows",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__ai-workflows\\full-1440x900.png",
+    "sizeBytes": 196129,
+    "timestamp": "2026-08-14T16:56:11.512Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/authentication/headers-cookies",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__authentication__headers-cookies\\full-1440x900.png",
+    "sizeBytes": 185795,
+    "timestamp": "2026-08-14T16:56:18.132Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/authentication/login-sessions",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__authentication__login-sessions\\full-1440x900.png",
+    "sizeBytes": 199883,
+    "timestamp": "2026-08-14T16:56:24.792Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/authentication/staging",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__authentication__staging\\full-1440x900.png",
+    "sizeBytes": 185802,
+    "timestamp": "2026-08-14T16:56:31.564Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/automation/ci-cd",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__automation__ci-cd\\full-1440x900.png",
+    "sizeBytes": 365673,
+    "timestamp": "2026-08-14T16:56:38.444Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/automation/debugging",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__automation__debugging\\full-1440x900.png",
+    "sizeBytes": 163627,
+    "timestamp": "2026-08-14T16:56:45.069Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/automation/dry-runs",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__automation__dry-runs\\full-1440x900.png",
+    "sizeBytes": 141439,
+    "timestamp": "2026-08-14T16:56:51.679Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/automation/json-output",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__automation__json-output\\full-1440x900.png",
+    "sizeBytes": 238346,
+    "timestamp": "2026-08-14T16:56:58.398Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/changelog",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__changelog\\full-1440x900.png",
+    "sizeBytes": 297587,
+    "timestamp": "2026-08-14T16:57:05.000Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/cli-reference",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__cli-reference\\full-1440x900.png",
+    "sizeBytes": 422240,
+    "timestamp": "2026-08-14T16:57:11.748Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/core-concepts/capture",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__core-concepts__capture\\full-1440x900.png",
+    "sizeBytes": 186597,
+    "timestamp": "2026-08-14T16:57:18.229Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/core-concepts/inputs",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__core-concepts__inputs\\full-1440x900.png",
+    "sizeBytes": 215024,
+    "timestamp": "2026-08-14T16:57:24.787Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/core-concepts/resuming-and-slicing",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__core-concepts__resuming-and-slicing\\full-1440x900.png",
+    "sizeBytes": 213939,
+    "timestamp": "2026-08-14T16:57:31.479Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/core-concepts/viewports",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__core-concepts__viewports\\full-1440x900.png",
+    "sizeBytes": 167529,
+    "timestamp": "2026-08-14T16:57:38.181Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/core-concepts/waiting",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__core-concepts__waiting\\full-1440x900.png",
+    "sizeBytes": 253455,
+    "timestamp": "2026-08-14T16:57:45.126Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/examples",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__examples\\full-1440x900.png",
+    "sizeBytes": 3015526,
+    "timestamp": "2026-08-14T16:57:56.819Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/installation",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__installation\\full-1440x900.png",
+    "sizeBytes": 212610,
+    "timestamp": "2026-08-14T16:58:03.834Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/output/archives",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__output__archives\\full-1440x900.png",
+    "sizeBytes": 132744,
+    "timestamp": "2026-08-14T16:58:10.366Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/output/manifest",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__output__manifest\\full-1440x900.png",
+    "sizeBytes": 176539,
+    "timestamp": "2026-08-14T16:58:16.984Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/quick-start",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__quick-start\\full-1440x900.png",
+    "sizeBytes": 723291,
+    "timestamp": "2026-08-14T16:58:23.929Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/recipes",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__recipes\\full-1440x900.png",
+    "sizeBytes": 221018,
+    "timestamp": "2026-08-14T16:58:30.537Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/troubleshooting",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__troubleshooting\\full-1440x900.png",
+    "sizeBytes": 252691,
+    "timestamp": "2026-08-14T16:58:37.065Z"
+  },
+  {
+    "url": "http://localhost:3000/docs/visual-comparison/diff",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots\\baseline\\dark\\localhost\\docs__visual-comparison__diff\\full-1440x900.png",
+    "sizeBytes": 412249,
+    "timestamp": "2026-08-14T16:58:43.766Z"
+  }
+]

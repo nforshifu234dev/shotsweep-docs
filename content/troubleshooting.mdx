@@ -1,0 +1,57 @@
+---
+title: Troubleshooting
+description: Common failure modes and how to diagnose them.
+---
+
+# Troubleshooting
+
+ShotSweep never lets one failed page stop the whole run. Instead, a failed page is recorded in
+the manifest with an `error` field, `capture` sets a non-zero exit code, and the rest of the run
+continues.
+
+## Common failure modes
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| `net::ERR_NAME_NOT_RESOLVED` | The domain doesn't resolve — typo, or a `--replace-origin` pointed at a host that isn't running | Check the URL, or confirm the target server is reachable |
+| `Timeout 30000ms exceeded` | The page never satisfied `--wait-until` in time — most often `networkidle` on a page with a lingering connection (analytics, polling, websocket) | Try `--wait-until load` (the default) instead of `networkidle`, raise `--timeout`, or use `--wait` for a specific selector |
+| No screenshots produced, run exits with "No URLs resolved" | Input source (sitemap, CSV, paths file) resolved to zero URLs | Run with `--dry-run` to see exactly what was resolved |
+| Auth pages capture a login screen instead of content | Session file is stale, or the wrong auth flag was used | Re-run `shotsweep login` to refresh `auth.json` |
+| `--cookie` throws "needs a Domain=... attribute" | A cookie flag was passed without `; Domain=...` | Add the domain, e.g. `"session=xyz; Domain=example.com"` |
+| Capture is slower than expected, or pages start timing out under `--concurrency` | Concurrency set above your CPU core count | Lower `--concurrency`, or accept the warning ShotSweep prints |
+
+## Get the real browser error
+
+Run with `--debug` to see the underlying Playwright/browser error for any failed page:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --debug
+```
+
+```text
+[debug] Capture failed: https://example.com (1440x900)
+page.goto: net::ERR_NAME_NOT_RESOLVED
+```
+
+See [Debugging](/docs/automation/debugging) for the full range of diagnostic output.
+
+## Check the manifest directly
+
+A failed entry in `manifest.json` looks like this — no `file`, an `error` instead:
+
+```json filename="manifest.json"
+{
+  "url": "https://example.com/dashboard",
+  "mode": "full",
+  "viewport": "1440x900",
+  "error": "page.goto: Timeout 30000ms exceeded.",
+  "timestamp": "2026-08-10T09:14:53.881Z"
+}
+```
+
+See [The Manifest](/docs/output/manifest) for the full shape.
+
+## Still stuck?
+
+Open an issue with the exact command you ran and the `--debug` output attached:
+[github.com/nforshifu234dev/nfsfu234-shotsweep/issues](https://github.com/nforshifu234dev/nfsfu234-shotsweep/issues)

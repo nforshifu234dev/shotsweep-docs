@@ -1,0 +1,41 @@
+---
+title: Debugging
+description: Detailed diagnostic output for a run — URL resolution, section counts, and browser errors.
+---
+
+# Debugging
+
+Add `--debug` to any `capture` run for detailed diagnostic output:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --debug
+```
+
+```text
+[debug] Resolved targets: [ 'https://example.com' ]
+[debug] Resolved 1 target(s).
+[debug] Section capture: totalHeight=14459, viewportHeight=900, sectionCount=17
+[debug] Wrote section screenshot: screenshots/example.com/home/section-01-1440x900.png
+[debug] Section capture complete, returning 17 file(s)
+```
+
+Debug output tells you:
+
+- which URLs were resolved, and from which input source
+- how many capture jobs (URL × viewport) were created
+- page dimensions and section counts, when using `--mode sections`
+- each screenshot's file path as it's written
+- capture failures, with the underlying browser error
+
+## Reading a capture failure
+
+A failed page load shows the real Playwright/browser error, which is usually the fastest way to
+diagnose what went wrong:
+
+```text
+[debug] Capture failed: https://this-domain-does-not-exist-123456.com (1440x900)
+page.goto: net::ERR_NAME_NOT_RESOLVED
+```
+
+That entry still lands in `manifest.json`, with an `error` field instead of a `file` field — see
+[Error Handling](/docs/troubleshooting) for the full list of failure modes.

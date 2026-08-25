@@ -1,0 +1,65 @@
+---
+title: Waiting & Page Loading
+description: Choose what "page loaded" means, and wait for a fixed delay or a CSS selector before ShotSweep takes the shot.
+---
+
+# Waiting & page loading
+
+## What counts as "loaded"
+
+`--wait-until` controls what ShotSweep waits for before it considers a page ready to capture:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --wait-until load
+```
+
+| Value | Waits for |
+| --- | --- |
+| `load` | All resources (images, styles, scripts) to finish loading. **Default.** |
+| `domcontentloaded` | The HTML to be parsed — fastest, but before images/late scripts finish. |
+| `networkidle` | Zero network activity for 500ms straight. |
+
+The default is `load`, not `networkidle`. `networkidle` demands total network silence, so any
+page with a lingering connection — an analytics beacon, a polling request, an open websocket —
+can hang until the timeout even though the page has fully rendered. `load` waits for real
+resources without requiring the network to go completely quiet.
+
+## Wait a fixed amount of time
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --wait 2000
+```
+
+Any numeric value is treated as milliseconds, applied **after** `--wait-until` resolves.
+
+## Wait for a CSS selector
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --wait ".dashboard"
+```
+
+Any non-numeric value is treated as a CSS selector — ShotSweep waits up to 15 seconds for it to
+appear before capturing (and continues anyway if it never does).
+
+## When this matters
+
+`--wait-until` and `--wait` are particularly useful for pages built with:
+
+- React, Next.js, Vue, or Angular
+- client-side dashboards
+- animations or transitions
+- lazy-loaded or infinite-scroll content
+- pages with long-lived connections (analytics, chat widgets, websockets) that would never
+  satisfy `networkidle`
+
+## Timeouts and retries
+
+Independently of waiting, every page load has its own timeout and retry budget:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --timeout 45000 --retries 2
+```
+
+`--timeout` (default `30000`ms) bounds the initial `page.goto()`. `--retries` (default `0`)
+re-attempts a failed page load that many additional times before the page is recorded as failed
+in the manifest.

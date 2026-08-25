@@ -1,0 +1,102 @@
+---
+title: JSON Output
+description: Machine-readable output for scripts, CI, and other tooling.
+---
+
+# JSON output
+
+Use `--json` when ShotSweep is being consumed by another program, CI pipeline, script, or
+automation system instead of the default terminal output.
+
+## Capture
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --json
+```
+
+```json filename="output"
+{
+  "ok": 1,
+  "failed": 0,
+  "total": 1,
+  "durationMs": 2417,
+  "avgMs": 2417,
+  "manifestPath": "screenshots/manifest.json",
+  "zipPath": null
+}
+```
+
+## Diff
+
+`diff` supports the same machine-readable mode:
+
+```bash filename="terminal"
+shotsweep diff old/manifest.json new/manifest.json --json
+```
+
+Example:
+
+```json filename="output"
+{
+  "summary": {
+    "changed": 2,
+    "unchanged": 9,
+    "added": 1,
+    "removed": 0,
+    "sizeChanged": 0,
+    "regressions": 2
+  },
+  "reportPath": "diff/diff-report.json",
+  "zipPath": null
+}
+```
+
+The `regressions` value represents the number of results that currently count as regressions.
+
+By default:
+
+    regressions = changed + sizeChanged
+
+`added` and `removed` are reported separately and do not contribute to the regression count.
+
+## Text output for humans
+
+If the output is intended for people rather than programs, use `--summary`:
+
+```bash filename="terminal"
+shotsweep diff old/manifest.json new/manifest.json --summary
+```
+
+You can also save the human-readable summary:
+
+```bash filename="terminal"
+shotsweep diff \
+  old/manifest.json \
+  new/manifest.json \
+  --text ./reports/visual-summary.txt
+```
+
+The text output is intentionally simple so it can be read in terminal logs, CI artifacts, or
+by humans reviewing a build.
+
+## Using both
+
+A CI job can produce machine-readable and human-readable output at the same time:
+
+```bash filename="terminal"
+shotsweep diff \
+  old/manifest.json \
+  new/manifest.json \
+  --json \
+  --text ./reports/visual-summary.txt
+```
+
+Use:
+
+- JSON for scripts, CI, bots, and AI tooling.
+- TXT for humans, logs, and downloadable artifacts.
+- `diff-report.json` for detailed per-page comparison data.
+- `old.png`, `new.png`, and `diff.png` for visual investigation.
+
+With `--json`, ShotSweep suppresses the spinner and prints exactly one JSON line, making the
+output safe to pipe into tools such as `jq` or parse directly in a script.

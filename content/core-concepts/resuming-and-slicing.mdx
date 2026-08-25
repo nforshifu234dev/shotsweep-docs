@@ -1,0 +1,54 @@
+---
+title: Resuming & Slicing Runs
+description: Capture a specific slice of a large run, resume after a crash, and get per-job progress output.
+---
+
+# Resuming & slicing runs
+
+## Capture a slice of a large run
+
+`--limit` and `--offset` let you capture part of a resolved URL list instead of all of it —
+useful for splitting a huge sitemap across parallel CI jobs, or testing a run before committing
+to the whole thing:
+
+```bash filename="terminal"
+# Capture URLs 50 through 99
+shotsweep capture --sitemap https://example.com/sitemap.xml --offset 50 --limit 50
+```
+
+`--offset` skips that many resolved URLs before starting; `--limit` caps how many are captured
+after that.
+
+## Resuming after a crash
+
+`--resume` skips URL + viewport pairs that already succeeded in `--out`'s existing manifest,
+instead of re-capturing everything:
+
+```bash filename="terminal"
+shotsweep capture --sitemap https://example.com/sitemap.xml --out ./screenshots --resume
+```
+
+Useful after a crash, a killed process, or a power loss partway through a large run — re-running
+the same command with `--resume` picks up where it left off.
+
+**Known limitation:** for `--mode sections`, only fully-successful `full`-mode jobs are trusted
+for resume. A `sections` job always re-captures on resume — a partial section write (say, a
+crash after section 12 of 17) currently can't be distinguished from zero sections written, so
+ShotSweep re-runs it to be safe rather than risk an incomplete set of section images.
+
+## Seeing progress on a large run
+
+By default, ShotSweep shows a single spinner line that overwrites itself — fine for a quick run,
+but it hides history once you're running with concurrency. `--verbose` prints one persistent line
+per completed job as it finishes:
+
+```bash filename="terminal"
+shotsweep capture --sitemap https://example.com/sitemap.xml --concurrency 4 --verbose
+```
+
+```text
+✓ https://example.com (1440x900) — 1/40
+✓ https://example.com/about (1440x900) — 2/40
+✗ https://example.com/dashboard (1440x900) — 3/40
+...
+```

@@ -1,0 +1,155 @@
+---
+title: CLI Reference
+description: Every command and flag ShotSweep supports.
+---
+
+# CLI reference
+
+ShotSweep's CLI lets you capture screenshots, reuse authenticated sessions, and compare capture runs for visual regressions. The reference below lists every command, flag, and default value, with examples for common workflows.
+
+```text
+shotsweep
+│
+├── capture
+├── login
+└── diff
+```
+
+## `shotsweep capture`
+
+Take screenshots of one or more pages.
+
+**Input (pick one)**
+
+| Flag | Description |
+| --- | --- |
+| `--url <url>` | Single URL to capture |
+| `--urls <file>` | JSON array or newline-delimited file of URLs |
+| `--csv <file>` | CSV file containing a column of URLs |
+| `--csv-column <name>` | Column name in the CSV holding the URL (auto-detected if omitted) |
+| `--sitemap <url>` | sitemap.xml URL to fetch and parse |
+| `--base <url>` | Base URL to prepend to `--paths` |
+| `--paths <file>` | JSON array or newline-delimited file of relative paths, used with `--base` |
+| `--replace-origin <url>` | Rewrite every resolved URL's origin to this |
+| `--limit <n>` | Capture at most this many resolved URLs |
+| `--offset <n>` | Skip this many resolved URLs before capturing |
+
+**Capture behavior**
+
+| Flag | Description | Default |
+| --- | --- | --- |
+| `--mode <mode>` | `full` or `sections` | `full` |
+| `--viewport <WxH\|preset>` | Repeatable, e.g. `--viewport 1440x900` | `desktop` |
+| `--wait-until <domcontentloaded\|load\|networkidle>` | What counts as "page loaded" before capturing | `load` |
+| `--wait <ms\|selector>` | Wait a fixed ms or for a CSS selector, after `--wait-until` resolves | — |
+| `--dark` | Emulate `prefers-color-scheme: dark` | `false` |
+| `--out <dir>` | Output directory | `./screenshots` |
+
+**Auth**
+
+| Flag | Description |
+| --- | --- |
+| `--session <file>` | Reuse a saved storageState session |
+| `--bearer <token>` | Sets `Authorization: Bearer <token>` on every request |
+| `--header <"Key: Value">` | Repeatable, arbitrary request header |
+| `--cookie <"name=value; Domain=...">` | Repeatable cookie to inject (needs a `Domain=`) |
+
+**Reliability & recovery**
+
+| Flag | Description | Default |
+| --- | --- | --- |
+| `--concurrency <n>` | Pages captured in parallel | `1` |
+| `--timeout <ms>` | Timeout for each page load | `30000` |
+| `--retries <n>` | Retry a failed page load this many times | `0` |
+| `--resume` | Skip URL+viewport pairs already captured in `--out`'s manifest | `false` |
+
+**Output & scripting**
+
+| Flag | Description | Default |
+| --- | --- | --- |
+| `--zip` | Also bundle the output directory into a `.zip` after capture | `false` |
+| `--dry-run` | Resolve and print target URLs without capturing anything | `false` |
+| `--json` | Print the final result as one JSON line instead of colored output | `false` |
+| `--debug` | Show detailed diagnostic output while running | `false` |
+| `--verbose` | Print one persistent line per completed job, instead of an overwriting spinner | `false` |
+| `--quiet` | Suppress the live progress line | `false` |
+| `--describe` | Print an AI-ready summary of the captured screenshots | `false` |
+
+## `shotsweep login`
+
+Drive a login form once and save the session for reuse with `capture --session`.
+
+| Flag | Required | Description |
+| --- | --- | --- |
+| `--login-url <url>` | Yes | Page containing the login form |
+| `--email-selector <css>` | Yes | CSS selector for the email/username field |
+| `--password-selector <css>` | Yes | CSS selector for the password field |
+| `--submit-selector <css>` | Yes | CSS selector for the submit button |
+| `--email <value>` | No | Email/username (or set `SHOTSWEEP_EMAIL`) |
+| `--password <value>` | No | Password (or set `SHOTSWEEP_PASSWORD`) |
+| `--session-out <file>` | No | Where to save the session (default `./auth.json`) |
+
+## `shotsweep diff`
+
+Compare two capture runs using their `manifest.json` files.
+
+```bash filename="terminal"
+shotsweep diff <old-manifest> <new-manifest>
+```
+
+| Flag | Description | Default |
+| --- | --- | --- |
+| `--out <dir>` | Where to write diff images and the report | `./diff` |
+| `--threshold <ratio\|percent\|preset>` | Fraction of differing pixels before a page counts as changed — accepts `0.001`, `"0.1%"`, or `strict`/`default`/`loose` | `default` (`0.001`) |
+| `--zip` | Also bundle the diff output into a `.zip` when done | `false` |
+| `--json` | Print the summary as JSON instead of colored output | `false` |
+| `--summary` | Print a human-readable visual regression summary | `false` |
+| `--text <file>` | Write the human-readable summary to a text file | — |
+
+See [Diffing Two Runs](/docs/visual-comparison/diff) for thresholds, regression
+policy, reports, and exit-code behavior.
+
+## Config file
+
+Drop a `shotsweep.config.json` or `.shotsweeprc.json` in your project so `shotsweep capture`
+and `shotsweep diff` run with fewer flags.
+
+```json filename="shotsweep.config.json"
+{
+  "sitemap": "https://example.com/sitemap.xml",
+  "viewport": ["1440x900", "390x844"],
+  "mode": "full",
+  "out": "./screenshots",
+  "diff": {
+    "out": "./diff",
+    "threshold": "loose",
+    "summary": true,
+    "text": "./reports/visual-summary.txt"
+  }
+}
+```
+
+Top-level keys are shared defaults for both commands.
+
+A `"diff"` sub-object overrides shared keys specifically for `shotsweep diff`.
+
+Priority, highest to lowest:
+
+**explicit CLI flag → command-specific config (`diff.*`) → shared top-level config**
+
+For example, the config can provide the default threshold, output directory, summary, and text
+report without requiring those flags every time.
+
+An explicit CLI flag still wins:
+
+```bash filename="terminal"
+shotsweep diff \
+  before/manifest.json \
+  after/manifest.json \
+  --threshold strict
+```
+
+Threshold values from a config file go through the same ratio, percentage, and preset
+normalization as CLI values.
+
+See [Diffing Two Runs](/docs/visual-comparison/diff#threshold).

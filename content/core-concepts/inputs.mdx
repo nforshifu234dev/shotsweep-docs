@@ -1,0 +1,56 @@
+---
+title: Inputs & Sitemaps
+description: The five ways to tell ShotSweep what to capture.
+---
+
+# Inputs
+
+Pick exactly one input mode per `capture` run.
+
+| Flag | Behavior |
+| --- | --- |
+| `--url <url>` | Single page |
+| `--urls <file>` | JSON array or newline-delimited `.txt` |
+| `--csv <file>` [`--csv-column <name>`] | Reads a URL column from a CSV; auto-detects the column if omitted |
+| `--sitemap <url>` | Fetches and parses `sitemap.xml`, including sitemap-index files |
+| `--base <url> --paths <file>` | Prepends a base URL to relative paths — for localhost/staging QA |
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com
+shotsweep capture --urls urls.json
+shotsweep capture --csv pages.csv
+shotsweep capture --sitemap https://example.com/sitemap.xml
+shotsweep capture --base http://localhost:3000 --paths paths.json
+```
+
+## Sitemap indexes
+
+When `--sitemap` points at a sitemap-index file (a sitemap of sitemaps), ShotSweep fetches and
+flattens every nested sitemap automatically — you don't need to enumerate them yourself.
+
+## CSV column detection
+
+With `--csv`, ShotSweep looks for a column named something like `url`, `link`, or `page` if
+`--csv-column` isn't given, and falls back to the first column.
+
+## Reusing a production sitemap locally
+
+```bash filename="terminal"
+shotsweep capture \
+  --sitemap https://example.com/sitemap.xml \
+  --replace-origin http://localhost:3000
+```
+
+Every resolved URL gets its origin swapped — one sitemap works across production, staging, and
+localhost without maintaining a separate paths file per environment.
+
+## Output layout
+
+Each captured URL gets its own folder under `--out`, named by hostname and page path:
+
+```text
+screenshots/
+└── example.com/
+    └── about/
+        └── full-1440x900.png
+```

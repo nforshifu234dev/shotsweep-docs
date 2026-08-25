@@ -1,0 +1,18 @@
+[
+  {
+    "url": "http://localhost:3000",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\viewports\\form-validation.nforshifu234dev.com\\home\\full-1440x900.png",
+    "sizeBytes": 576230,
+    "timestamp": "2026-08-14T11:14:43.062Z"
+  },
+  {
+    "url": "http://localhost:3000",
+    "mode": "full",
+    "viewport": "390x844",
+    "file": "public\\screenshots\\viewports\\form-validation.nforshifu234dev.com\\home\\full-390x844.png",
+    "sizeBytes": 422766,
+    "timestamp": "2026-08-14T11:14:45.289Z"
+  }
+]

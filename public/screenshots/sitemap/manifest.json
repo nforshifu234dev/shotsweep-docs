@@ -1,0 +1,154 @@
+[
+  {
+    "url": "http://localhost:3000",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\home\\full-1440x900.png",
+    "sizeBytes": 824866,
+    "timestamp": "2026-08-14T10:56:26.893Z"
+  },
+  {
+    "url": "http://localhost:3000/api-reference",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\api-reference\\full-1440x900.png",
+    "sizeBytes": 709741,
+    "timestamp": "2026-08-14T10:56:30.232Z"
+  },
+  {
+    "url": "http://localhost:3000/changelog",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\changelog\\full-1440x900.png",
+    "sizeBytes": 407738,
+    "timestamp": "2026-08-14T10:56:31.899Z"
+  },
+  {
+    "url": "http://localhost:3000/configuration",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\configuration\\full-1440x900.png",
+    "sizeBytes": 559460,
+    "timestamp": "2026-08-14T10:56:33.419Z"
+  },
+  {
+    "url": "http://localhost:3000/contributing",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\contributing\\full-1440x900.png",
+    "sizeBytes": 433414,
+    "timestamp": "2026-08-14T10:56:35.010Z"
+  },
+  {
+    "url": "http://localhost:3000/examples/basic",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\examples__basic\\full-1440x900.png",
+    "sizeBytes": 257847,
+    "timestamp": "2026-08-14T10:56:36.322Z"
+  },
+  {
+    "url": "http://localhost:3000/examples/conditional",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\examples__conditional\\full-1440x900.png",
+    "sizeBytes": 489549,
+    "timestamp": "2026-08-14T10:56:37.832Z"
+  },
+  {
+    "url": "http://localhost:3000/examples/custom-theme",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\examples__custom-theme\\full-1440x900.png",
+    "sizeBytes": 529142,
+    "timestamp": "2026-08-14T10:56:39.294Z"
+  },
+  {
+    "url": "http://localhost:3000/examples/i18n",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\examples__i18n\\full-1440x900.png",
+    "sizeBytes": 450692,
+    "timestamp": "2026-08-14T10:56:40.677Z"
+  },
+  {
+    "url": "http://localhost:3000/examples/mobile-aware",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\examples__mobile-aware\\full-1440x900.png",
+    "sizeBytes": 424889,
+    "timestamp": "2026-08-14T10:56:42.019Z"
+  },
+  {
+    "url": "http://localhost:3000/examples",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\examples\\full-1440x900.png",
+    "sizeBytes": 194853,
+    "timestamp": "2026-08-14T10:56:42.935Z"
+  },
+  {
+    "url": "http://localhost:3000/examples/saas-onboarding",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\examples__saas-onboarding\\full-1440x900.png",
+    "sizeBytes": 797134,
+    "timestamp": "2026-08-14T10:56:45.031Z"
+  },
+  {
+    "url": "http://localhost:3000/faq",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\faq\\full-1440x900.png",
+    "sizeBytes": 653316,
+    "timestamp": "2026-08-14T10:56:47.145Z"
+  },
+  {
+    "url": "http://localhost:3000/getting-started",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\getting-started\\full-1440x900.png",
+    "sizeBytes": 457290,
+    "timestamp": "2026-08-14T10:56:48.749Z"
+  },
+  {
+    "url": "http://localhost:3000/migration",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\migration\\full-1440x900.png",
+    "sizeBytes": 475368,
+    "timestamp": "2026-08-14T10:56:50.165Z"
+  },
+  {
+    "url": "http://localhost:3000/project-config",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\project-config\\full-1440x900.png",
+    "sizeBytes": 484660,
+    "timestamp": "2026-08-14T10:56:51.624Z"
+  },
+  {
+    "url": "http://localhost:3000/theming",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\theming\\full-1440x900.png",
+    "sizeBytes": 374471,
+    "timestamp": "2026-08-14T10:56:52.856Z"
+  },
+  {
+    "url": "http://localhost:3000/troubleshooting",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\troubleshooting\\full-1440x900.png",
+    "sizeBytes": 765409,
+    "timestamp": "2026-08-14T10:56:54.748Z"
+  },
+  {
+    "url": "http://localhost:3000/whats-new",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "public\\screenshots\\sitemap\\tour-guide.nforshifu234dev.com\\whats-new\\full-1440x900.png",
+    "sizeBytes": 206253,
+    "timestamp": "2026-08-14T10:56:55.668Z"
+  }
+]

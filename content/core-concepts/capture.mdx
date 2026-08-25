@@ -1,0 +1,52 @@
+---
+title: Full-Page & Sectioned Capture
+description: Capture an entire page in one shot, or slice it into viewport-height sections.
+---
+
+# Capture modes
+
+## Full-page capture
+
+The default. One tall screenshot per page, per viewport:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --mode full
+```
+
+## Sectioned capture
+
+`--mode sections` slices a page into viewport-height sections instead of one tall image —
+useful when a downstream tool (design review, a diff, a PDF export) works better with
+fixed-height images:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --mode sections
+```
+
+ShotSweep measures the page's full scroll height, divides it by the viewport height, and scrolls
+through it in that many steps:
+
+```text
+A 14,459px page
+        ↓
+900px viewport sections
+        ↓
+17 screenshots
+```
+
+With `--debug`, you can see this decision as it happens:
+
+```text
+[debug] Section capture: totalHeight=14459, viewportHeight=900, sectionCount=17
+[debug] Wrote section screenshot: screenshots/example.com/home/section-01-1440x900.png
+...
+[debug] Section capture complete, returning 17 file(s)
+```
+
+Section files are numbered in scroll order: `section-01-<W>x<H>.png`, `section-02-<W>x<H>.png`,
+and so on.
+
+## Choosing a mode
+
+- **Full page** — best for a single reference image per page, and for `shotsweep diff`.
+- **Sections** — best for very long pages, or when you want fixed-height images for a report.

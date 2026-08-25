@@ -1,0 +1,46 @@
+---
+title: Headers, Cookies & Bearer Tokens
+description: Request customization for APIs and token-based auth, without a login flow.
+---
+
+# Request customization
+
+If your app doesn't need a full login flow, pick whichever mechanism matches it.
+
+## Bearer token
+
+```bash filename="terminal"
+shotsweep capture --sitemap https://example.com/sitemap.xml --bearer $API_TOKEN
+```
+
+Sets `Authorization: Bearer <token>` on every request in the run.
+
+## Custom headers
+
+`--header` is repeatable:
+
+```bash filename="terminal"
+shotsweep capture --url https://staging.example.com --header "X-Environment: staging"
+```
+
+## Cookie injection
+
+`--cookie` is repeatable and each cookie needs a `Domain=` attribute:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --cookie "session=xyz; Domain=example.com"
+```
+
+## Combining mechanisms
+
+`--session`, `--bearer`, `--header`, and `--cookie` can all be combined in a single run — for
+example, a saved session plus an extra environment header:
+
+```bash filename="terminal"
+shotsweep capture \
+  --sitemap https://example.com/sitemap.xml \
+  --session auth.json \
+  --header "X-Environment: staging"
+```
+
+For a full login flow instead, see [Login Sessions](/docs/authentication/login-sessions).

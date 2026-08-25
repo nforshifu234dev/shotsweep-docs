@@ -1,0 +1,27 @@
+---
+title: ZIP Archives
+description: Bundle a capture or diff run into a single archive to hand off.
+---
+
+# ZIP archives
+
+Add `--zip` to either `capture` or `diff` to bundle the output directory into a single `.zip`
+file when the run finishes — one file to hand off to design, QA, or a client.
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --zip
+```
+
+```bash filename="terminal"
+shotsweep diff old/manifest.json new/manifest.json --out ./diff --zip
+```
+
+The archive is written alongside the output directory, using the same path with a `.zip`
+extension — `./screenshots` becomes `./screenshots.zip`. The output directory itself isn't added
+as a parent folder inside the archive; its contents sit at the archive's root.
+
+Both `capture` and `diff` print the resulting zip path when the run completes:
+
+```text
+Zip: screenshots.zip
+```

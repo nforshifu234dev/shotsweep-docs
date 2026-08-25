@@ -1,0 +1,75 @@
+---
+title: Installation
+description: Install the ShotSweep CLI globally with npm.
+---
+
+# Installation
+
+Install ShotSweep globally with npm:
+
+```bash filename="terminal"
+npm install -g @nfsfu234/shotsweep
+```
+
+ShotSweep uses Playwright and automatically installs a Chromium browser during installation.
+
+## If npm blocks the install script
+
+Some npm versions and configurations block package lifecycle scripts until they are explicitly approved.
+
+If you see a warning like:
+
+```text
+npm warn install-scripts 1 package had install scripts blocked
+npm warn install-scripts @nfsfu234/shotsweep@0.1.0 (postinstall: playwright install chromium || true)
+```
+
+Approve ShotSweep's install script:
+
+```bash filename="terminal"
+npm install-scripts approve @nfsfu234/shotsweep
+```
+
+Then run the installation again:
+
+```bash filename="terminal"
+npm install -g @nfsfu234/shotsweep
+```
+
+This allows ShotSweep's `postinstall` script to download the Chromium browser required for screenshots.
+
+## Installing Chromium manually
+
+If you prefer not to allow package install scripts, or if the automatic browser download fails behind a restrictive network, install Chromium manually:
+
+```bash filename="terminal"
+npx playwright install chromium
+```
+
+Then verify the installation:
+
+```bash filename="terminal"
+shotsweep --help
+```
+
+You should see the three top-level commands: `capture`, `login`, and `diff`.
+
+## Running without a global install
+
+You can also run ShotSweep on demand with `npx`, without installing it globally — useful for CI:
+
+```bash filename="terminal"
+npx @nfsfu234/shotsweep capture --url https://example.com
+```
+
+If npm blocks ShotSweep's install script, approve it first:
+
+```bash filename="terminal"
+npm install-scripts approve @nfsfu234/shotsweep
+```
+
+Then run the command again.
+
+## Next step
+
+Continue to the [Quick Start](/docs/quick-start) to capture your first screenshot.

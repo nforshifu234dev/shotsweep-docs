@@ -1,0 +1,74 @@
+---
+title: AI Workflows
+description: Generate an AI-ready summary of a capture batch for a model to review.
+---
+
+# AI-ready descriptions
+
+`--describe` prints a structured, plain-text summary of a completed capture run — ready to paste
+into a model alongside the screenshot files.
+
+```bash filename="terminal"
+shotsweep capture --urls paths.json --describe
+```
+
+```text
+--- AI description ---
+
+Screenshot batch summary
+========================
+
+Screenshots: 26
+Pages: 3
+Mode: full
+Output: ./screenshots
+
+Pages captured:
+
+- https://example.com
+  Screenshots: 17
+  Viewports: 1440x900
+  Capture: 17 section screenshots
+
+- https://example.com/about
+  Screenshots: 6
+  Viewports: 1440x900, 390x844
+
+- https://example.com/contact
+  Screenshots: 3
+  Viewports: 1440x900
+
+AI review instructions:
+Attach the screenshot files listed in manifest.json and review them for:
+- visual hierarchy and layout
+- responsive behavior across viewports
+- spacing, typography, and consistency
+- accessibility concerns
+- obvious visual regressions or rendering issues
+
+Compare related screenshots where multiple viewports or capture modes are available.
+```
+
+## What this actually does
+
+`--describe` does not analyze the screenshots itself — ShotSweep doesn't ship a vision model.
+It produces a structured, AI-ready **description** of the capture batch (page counts, viewports,
+capture mode, any failures) so the generated images can be handed to an AI system for the
+visual review.
+
+## A typical workflow
+
+```text
+ShotSweep
+   ↓
+screenshots
+   +
+manifest
+   ↓
+AI visual review
+```
+
+1. Run `shotsweep capture ... --describe`.
+2. Attach the files listed in `manifest.json`, plus the printed description, to your model of
+   choice.
+3. Ask it to review layout, responsiveness, and consistency across the batch.

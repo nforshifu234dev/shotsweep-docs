@@ -1,0 +1,69 @@
+---
+title: Quick Start
+description: Capture your first screenshot in under a minute.
+---
+
+import { ExampleImage } from '../app/components/ExampleImage.jsx'
+
+# Quick Start
+
+## Capture a single page
+
+```bash filename="terminal"
+shotsweep capture --url https://tour-guide.nforshifu234dev.com --mode full
+```
+
+```text
+✔ Resolved 1 URL
+✔ Captured 1 screenshot → ./screenshots
+Done in 2.4s
+Manifest: screenshots/manifest.json
+```
+
+This writes screenshots into `./screenshots`, organized by hostname and page, plus a
+`manifest.json` describing every shot:
+
+```text
+screenshots/
+├── tour-guide.nforshifu234dev.com/
+│   └── home/
+│       └── full-1440x900.png
+└── manifest.json
+```
+
+<ExampleImage
+src="/screenshots/full-page/tour-guide.nforshifu234dev.com/home/full-1440x900.png"
+alt="Full-page screenshot of the TourGuide landing page captured by ShotSweep"
+caption="The screenshot produced by the capture command above."
+/>
+
+## Capture every page in a sitemap
+
+```bash filename="terminal"
+shotsweep capture --sitemap https://tour-guide.nforshifu234dev.com/sitemap.xml --out ./screenshots
+```
+
+## Capture a local dev build, two viewports, zipped
+
+```bash filename="terminal"
+shotsweep capture \
+  --base http://localhost:3000 \
+  --paths paths.json \
+  --viewport 1440x900 \
+  --viewport 390x844 \
+  --zip
+```
+
+## Preview before capturing
+
+`--dry-run` resolves your targets and prints them, without opening a browser:
+
+```bash filename="terminal"
+shotsweep capture --sitemap https://tour-guide.nforshifu234dev.com/sitemap.xml --dry-run
+```
+
+## Next steps
+
+* Learn about the [input modes](/docs/core-concepts/inputs) — URL, CSV, sitemap, or paths.
+* Set up [authentication](/docs/authentication/login-sessions) for pages behind a login.
+* Run your first [visual diff](/docs/visual-comparison/diff) between two capture runs.

@@ -1,0 +1,23 @@
+node_modules/
+.next/
+out/
+.env*.local
+.DS_Store
+*.log
+
+file_structure.txt
+file_structure_metadata.txt
+load_folders.py
+
+
+# Visual regression - regenerated each run, not baseline
+screenshots/current/
+screenshots/diff/
+diff/
+
+# Local-only tarball for testing before npm publish
+vendor/
+EOF
+
+previews
+FUTURE.txt

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="markPrimary" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#C4B5FD"/>
+      <stop offset="0.45" stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#6D28D9"/>
+    </linearGradient>
+    <radialGradient id="markCenter" cx="50" cy="50" r="7" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#DDD6FE"/>
+    </radialGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="#0B0B0F"/>
+  <g fill="url(#markPrimary)">
+    <path d="M50 50L50 28L62 33Z"/>
+    <path d="M50 50L72 39L72 50Z"/>
+    <path d="M50 50L72 61L62 67Z"/>
+    <path d="M50 50L50 72L38 67Z"/>
+    <path d="M50 50L28 61L28 50Z"/>
+    <path d="M50 50L28 39L38 33Z"/>
+  </g>
+  <circle cx="50" cy="50" r="7" fill="url(#markCenter)"/>
+</svg>

@@ -1,0 +1,37 @@
+---
+title: Dry Runs
+description: Preview exactly what ShotSweep would capture, without opening a browser.
+---
+
+# Dry runs
+
+`--dry-run` resolves your input (URL, CSV, sitemap, or paths) and prints the resulting target
+list — without launching Chromium or capturing anything.
+
+```bash filename="terminal"
+shotsweep capture --urls paths.json --dry-run
+```
+
+```text
+Would capture 3 URLs:
+
+  https://example.com
+  https://example.com/about
+  https://example.com/contact
+```
+
+This is the fastest way to sanity-check:
+
+- that a sitemap resolved the pages you expect
+- that `--replace-origin` rewrote origins correctly
+- that a CSV picked the right column
+
+Combine it with `--json` for a scriptable preview:
+
+```bash filename="terminal"
+shotsweep capture --sitemap https://example.com/sitemap.xml --dry-run --json
+```
+
+```json filename="output"
+{ "dryRun": true, "targets": ["https://example.com", "https://example.com/about"] }
+```

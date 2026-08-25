@@ -1,0 +1,45 @@
+---
+title: The Manifest
+description: manifest.json is the machine-readable record of a ShotSweep capture run.
+---
+
+# The manifest
+
+Every `capture` run writes a `manifest.json` into `--out`. It's the machine-readable record the
+rest of ShotSweep — and your own tooling — builds on: `diff` matches entries by URL and viewport,
+`--describe` summarizes it, and CI scripts can parse it directly.
+
+## Shape
+
+Each entry corresponds to one screenshot (or one failed attempt):
+
+```json filename="manifest.json"
+[
+  {
+    "url": "https://example.com",
+    "mode": "full",
+    "viewport": "1440x900",
+    "file": "screenshots/example.com/home/full-1440x900.png",
+    "sizeBytes": 482113,
+    "timestamp": "2026-08-10T09:14:22.104Z"
+  },
+  {
+    "url": "https://example.com/dashboard",
+    "mode": "full",
+    "viewport": "1440x900",
+    "error": "page.goto: Timeout 30000ms exceeded.",
+    "timestamp": "2026-08-10T09:14:53.881Z"
+  }
+]
+```
+
+Successful entries have `file` and `sizeBytes`; failed entries have `error` instead, with no
+`file`. A `capture` run appends to any existing manifest at the same `--out` path rather than
+overwriting it, so repeated runs into the same directory accumulate history.
+
+## Where it's used
+
+- **`shotsweep diff`** reads two manifests and matches screenshots by URL + viewport.
+- **`--describe`** groups the manifest by page to build its summary.
+- **CI** — parse it directly, or use `--json` on the `capture` command for a run-level summary
+  instead of the full per-file manifest.

@@ -1,0 +1,189 @@
+---
+title: CI/CD
+description: Gate a pipeline on visual regressions with ShotSweep capture and diff.
+---
+
+# Using ShotSweep in CI
+
+A typical pull-request workflow:
+
+```text
+Pull Request
+     ↓
+Build application
+     ↓
+Start preview server
+     ↓
+ShotSweep capture
+     ↓
+ShotSweep diff
+     ↓
+Visual changes detected?
+     ↓
+PR feedback
+```
+
+## Capture
+
+```yaml filename="capture-screenshots.yml"
+- name: Capture screenshots
+  run: |
+    npx shotsweep capture \
+      --urls paths.json \
+      --mode sections \
+      --json
+```
+
+## Compare against the previous run
+
+```yaml filename="compare-screenshots.yml"
+- name: Compare screenshots
+  run: |
+    npx shotsweep diff \
+      previous/manifest.json \
+      screenshots/manifest.json \
+      --summary \
+      --text ./reports/visual-summary.txt \
+      --json
+```
+
+The JSON output is useful for machines and CI tooling, while the text summary is useful as a
+human-readable build artifact.
+
+## Diff policy
+
+ShotSweep's default CI policy is:
+
+| Result | Fails CI? |
+| --- | --- |
+| `changed` | Yes |
+| `size-changed` | Yes |
+| `unchanged` | No |
+| `added` | No |
+| `removed` | No |
+
+Therefore:
+
+- A genuine visual change fails the step.
+- A screenshot resize fails the step.
+- An intentionally added page does not fail the step.
+- An intentionally removed page does not fail the step.
+
+Added and removed pages are still included in the diff report.
+
+## Threshold vs regression policy
+
+These are two separate concepts.
+
+**Threshold** controls sensitivity.
+
+```bash filename="terminal"
+shotsweep diff before/manifest.json after/manifest.json --threshold strict
+```
+
+**Regression policy** controls whether the resulting status fails the command.
+
+For example, a page can be classified as `changed` because it exceeded the threshold. Since
+`changed` is a regression, the command exits with `1`.
+
+See [Diffing Two Runs](/docs/visual-comparison/diff) for the complete status and threshold
+reference.
+
+## Config-driven CI
+
+For projects that run the same visual comparison repeatedly, put the settings in
+`shotsweep.config.json`.
+
+```json filename="shotsweep.config.json"
+{
+  "viewport": ["1440x900", "390x844"],
+  "diff": {
+    "out": "./diff",
+    "threshold": "default",
+    "summary": true,
+    "text": "./reports/visual-summary.txt"
+  }
+}
+```
+
+Then CI can stay short:
+
+```yaml
+- name: Compare screenshots
+  run: |
+    npx shotsweep diff \
+      previous/manifest.json \
+      screenshots/manifest.json
+```
+
+Explicit CLI flags override the config file, so CI can still tighten or loosen the comparison
+when needed.
+
+## Exit codes
+
+Both commands are designed to gate a pipeline:
+
+- `capture` sets a non-zero exit code if any page failed to capture.
+- `diff` sets a non-zero exit code when `changed` or `size-changed` results are present.
+- `added` and `removed` results do not fail the build by default.
+
+This allows CI to use the process exit code as the gate while using JSON, text, and the diff
+report as artifacts or inputs for further automation.
+
+## Reports and artifacts
+
+A useful CI setup keeps three forms of output:
+
+1. **Exit code** — determines whether the step passes.
+2. **JSON report** — machine-readable data for scripts, bots, and AI tooling.
+3. **Text summary** — human-readable output for logs and build artifacts.
+
+The diff directory can also contain the visual evidence:
+
+```text
+diff/
+├── diff-report.json
+├── changed-page/
+│   ├── old.png
+│   ├── new.png
+│   └── diff.png
+└── ...
+```
+
+Upload the diff directory and text summary as CI artifacts when a build fails.
+
+## Visual regression protection
+
+ShotSweep can be used to protect the documentation site itself.
+
+For this repository, the intended flow is:
+
+    Pull request
+         ↓
+    Build docs site
+         ↓
+    Deploy preview
+         ↓
+    Capture preview
+         ↓
+    Compare against baseline
+         ↓
+    Changed or resized?
+         ↓
+    Fail CI
+         ↓
+    Merge blocked
+
+The default ShotSweep regression policy treats `changed` and `size-changed`
+results as failures. Added and removed pages are reported but do not fail the
+workflow.
+
+This makes visual comparison suitable for protected `main` branches: a pull
+request can change documentation normally, while unintended visual changes
+are caught before the pull request is merged.
+
+## Caching the browser
+
+Playwright downloads a Chromium build on install. Cache `~/.cache/ms-playwright` or your
+platform's equivalent between CI runs to avoid re-downloading it every time.
+

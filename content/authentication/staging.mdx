@@ -1,0 +1,37 @@
+---
+title: Staging & Local Development
+description: Point ShotSweep at localhost or staging without maintaining separate input files per environment.
+---
+
+# Staging & local development
+
+## Base + paths
+
+Use `--base` with a relative-paths file to capture a local dev server:
+
+```bash filename="terminal"
+shotsweep capture --base http://localhost:3000 --paths paths.json
+```
+
+`paths.json` is a JSON array or newline-delimited list of relative paths — each one gets prefixed
+with `--base` to build the final URL.
+
+## Reusing a production sitemap
+
+Rather than maintaining a separate paths file per environment, reuse your production sitemap
+and rewrite its origin:
+
+```bash filename="terminal"
+shotsweep capture \
+  --sitemap https://example.com/sitemap.xml \
+  --replace-origin https://staging.example.com
+```
+
+Every resolved URL keeps its path, but its protocol and host are swapped to `--replace-origin`.
+One sitemap now works across production, staging, and localhost.
+
+## Combine with a config file
+
+If a given project always targets the same base URL, put it in a
+[config file](/docs/cli-reference#config-file) so `capture` runs with zero flags during local
+development.
