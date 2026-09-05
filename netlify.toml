@@ -1,5 +1,5 @@
 [[redirects]]
   from = "https://shotsweep.netlify.app/*"
-  to = "https://tourguide.nforshifu234dev.com/:splat"
+  to = "https://shotsweep.nforshifu234dev.com/:splat"
   status = 301
   force = true
