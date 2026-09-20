@@ -107,13 +107,27 @@ export async function POST(request) {
     const dataUrl = await captureTarget(target.url)
     cache.set(key, { dataUrl, expiresAt: Date.now() + CACHE_TTL_MS })
     return Response.json({ dataUrl, label: target.label, cached: false })
+  // } catch (err) {
+  //   const timedOut = /Timeout|timeout/.test(err?.message ?? '')
+  //   return Response.json(
+  //     { error: timedOut ? 'The target page took too long to load.' : 'Capture failed.' },
+  //     { status: timedOut ? 504 : 500 }
+  //   )
+  // } 
   } catch (err) {
-    const timedOut = /Timeout|timeout/.test(err?.message ?? '')
+    console.error('SHOTSWEEP CAPTURE ERROR:', err)
+
+    const message = err instanceof Error ? err.message : String(err)
+
     return Response.json(
-      { error: timedOut ? 'The target page took too long to load.' : 'Capture failed.' },
-      { status: timedOut ? 504 : 500 }
+      {
+        error: 'Capture failed.',
+        debug: message,
+      },
+      { status: 500 }
     )
-  } finally {
+  }
+  finally {
     inFlight -= 1
   }
 }
