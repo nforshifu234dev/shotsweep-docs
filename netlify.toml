@@ -3,3 +3,6 @@
   to = "https://shotsweep.nforshifu234dev.com/:splat"
   status = 301
   force = true
+
+[build.environment]
+  PLAYWRIGHT_BROWSERS_PATH = "0"
