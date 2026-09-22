@@ -11,64 +11,112 @@ Install ShotSweep globally with npm:
 npm install -g @nfsfu234/shotsweep
 ```
 
-ShotSweep uses Playwright and automatically installs a Chromium browser during installation.
+ShotSweep uses Playwright and requires Chromium for screenshot capture, installed automatically via a `postinstall` script.
 
 ## If npm blocks the install script
 
-Some npm versions and configurations block package lifecycle scripts until they are explicitly approved.
-
-If you see a warning like:
+Recent npm versions can block a package's lifecycle scripts (like `postinstall`) until explicitly allowed. If you see a warning like:
 
 ```text
 npm warn install-scripts 1 package had install scripts blocked
-npm warn install-scripts @nfsfu234/shotsweep@0.1.0 (postinstall: playwright install chromium || true)
+npm warn install-scripts @nfsfu234/shotsweep@1.2.0 (postinstall: playwright install chromium || true)
 ```
 
-Approve ShotSweep's install script:
+Allow ShotSweep's install script **before** installing:
 
 ```bash filename="terminal"
-npm install-scripts approve @nfsfu234/shotsweep
-```
-
-Then run the installation again:
-
-```bash filename="terminal"
+npm config set allow-scripts=@nfsfu234/shotsweep --location=user
 npm install -g @nfsfu234/shotsweep
 ```
 
-This allows ShotSweep's `postinstall` script to download the Chromium browser required for screenshots.
+This setting is saved to your user config, so you won't need to repeat it for future ShotSweep installs or upgrades.
+
+**Note:** Don't use `npm install-scripts approve @nfsfu234/shotsweep` for a global 
+install — that command approves scripts for packages inside a **project's**
+`node_modules`, and will fail with `ENOMATCH` for a global package since
+there's nothing local for it to match against. Use `npm config set
+allow-scripts=...` instead, as shown above.
+
+## Windows
+
+Open **Command Prompt** or **PowerShell** and run:
+
+```powershell filename="terminal"
+npm config set allow-scripts=@nfsfu234/shotsweep --location=user
+npm install -g @nfsfu234/shotsweep
+```
+
+## If you already installed ShotSweep
+
+If you installed before setting `allow-scripts`, set it now and reinstall so the `postinstall` script gets a chance to run:
+
+```bash filename="terminal"
+npm config set allow-scripts=@nfsfu234/shotsweep --location=user
+npm uninstall -g @nfsfu234/shotsweep
+npm install -g @nfsfu234/shotsweep
+```
 
 ## Installing Chromium manually
 
-If you prefer not to allow package install scripts, or if the automatic browser download fails behind a restrictive network, install Chromium manually:
+If you'd rather not allow install scripts, or the automatic download fails on a restrictive network, install Chromium directly:
 
 ```bash filename="terminal"
 npx playwright install chromium
 ```
 
-Then verify the installation:
+## One-time installation (no persistent config)
+
+Useful for CI or a machine where you don't want to save the setting:
+
+```bash filename="terminal"
+npm install -g @nfsfu234/shotsweep --allow-scripts=@nfsfu234/shotsweep
+```
+
+## Running without a global install
+
+Run ShotSweep on demand with `npx`, without installing it globally:
+
+```bash filename="terminal"
+npx --allow-scripts=@nfsfu234/shotsweep @nfsfu234/shotsweep capture --url https://example.com
+```
+
+## Verify the installation
 
 ```bash filename="terminal"
 shotsweep --help
 ```
 
-You should see the three top-level commands: `capture`, `login`, and `diff`.
-
-## Running without a global install
-
-You can also run ShotSweep on demand with `npx`, without installing it globally — useful for CI:
+You should see the top-level commands: `capture`, `login`, `diff`.
 
 ```bash filename="terminal"
-npx @nfsfu234/shotsweep capture --url https://example.com
+shotsweep --version
 ```
 
-If npm blocks ShotSweep's install script, approve it first:
+## Troubleshooting
+
+### `npm install-scripts approve` fails with `ENOMATCH`
+
+```text
+npm error code ENOMATCH
+npm error No installed packages match: @nfsfu234/shotsweep
+```
+
+You're running the project-scoped approval command against a global install. Use this instead:
 
 ```bash filename="terminal"
-npm install-scripts approve @nfsfu234/shotsweep
+npm config set allow-scripts=@nfsfu234/shotsweep --location=user
+npm install -g @nfsfu234/shotsweep
 ```
 
-Then run the command again.
+### `shotsweep` is not recognized
+
+Check npm's global prefix is on your `PATH`:
+
+```bash filename="terminal"
+npm prefix -g
+```
+
+Restart your terminal, then try `shotsweep --help` again.
 
 ## Next step
 
