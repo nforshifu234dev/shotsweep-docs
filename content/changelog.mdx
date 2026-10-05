@@ -7,6 +7,57 @@ description: Version history for NFSFU234 ShotSweep.
 
 All notable changes to the NFSFU234 ShotSweep Library will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and adheres to Semantic Versioning.
 
+## [1.3.0] — Scroll-reveal capture and hardening
+
+### Added
+
+* Scroll warm-up before `full` and `sections` captures, so scroll-reveal content and lazy-loaded
+  images appear. Disable with `--no-scroll`.
+* `--image-wait <ms>`: wait for images still loading after the scroll, re-request images cancelled
+  by a load timeout, and warn about any that never finish.
+* A page that times out on `--wait-until` but is already usable is captured with a warning;
+  `--strict-load` restores failing.
+* `--freeze-animations`, `--user-agent`, `--ignore-https-errors`, and `--headers-all-origins`.
+* URLs without a scheme get `https://` (`http://` for localhost), and pasted Markdown links are
+  unwrapped. All invalid URLs are reported together before capture starts.
+* Sitemap fetches have a timeout, a cycle guard, a depth limit, and `.xml.gz` support.
+* Comments (`#`) and UTF-8 BOMs are handled in URL, paths and CSV files.
+* Failure reasons and warnings are printed under the run summary.
+* `diff` reports screenshots it can't read as `error` results.
+
+### Changed
+
+* `--bearer` and `--header` are sent only to the captured site and its subdomains.
+* `manifest.json` entries are replaced per job, use forward-slash paths, and are written
+  atomically. A corrupt manifest is moved aside instead of overwritten.
+* Folder names include the port, and add a hash suffix for query-string, non-ASCII, or very long
+  paths.
+* Screenshots, `--wait` selectors and retries respect `--timeout`.
+* `--resume` re-captures a job whose screenshot file was deleted.
+* `diff` counts `error` results as regressions and matches pages across path styles, trailing
+  slashes, and moved manifests.
+
+### Fixed
+
+* `--zip` with `--out .` no longer writes `..zip` or includes itself.
+* A single failing page no longer aborts the whole batch, and Chromium is always closed.
+* A broken `shotsweep.config.json` is reported instead of silently ignored.
+* Malformed `--header` and `--cookie` values are rejected instead of skipped.
+* Credentials embedded in URLs are masked in `run-record.json`.
+* Stale `section-NN` files from an earlier run are removed.
+
+See [Upgrading to 1.3](/docs/upgrading) for behaviour changes that can affect existing baselines.
+
+## [1.2.0] — Element capture and run provenance
+
+### Added
+
+* `--mode element` with `--selector` to capture a single element, cropped to its own size.
+* `run-record.json`, written with every capture (skip with `--no-record`): tool, browser and OS
+  versions, redacted resolved config, and SHA-256 hashes of the screenshots.
+* `diff` flags environment drift between two runs and records provenance, the pass/fail decision,
+  and image hashes in `diff-report.json`.
+
 ## [0.1.0] — NFSFU234 Open Source Day (2026-08-25)
 
 **Initial public release.**

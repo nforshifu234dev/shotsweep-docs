@@ -7,14 +7,31 @@ description: Common failure modes and how to diagnose them.
 
 ShotSweep never lets one failed page stop the whole run. Instead, a failed page is recorded in
 the manifest with an `error` field, `capture` sets a non-zero exit code, and the rest of the run
-continues.
+continues. The reason for each failure is printed under the run summary, so you don't need
+`--debug` just to see why a page failed:
+
+```text
+✔ Captured 1 screenshot, 1 failed → ./screenshots
+  ✗ https://example.com/dashboard (1440x900): page.goto: Timeout 30000ms exceeded.
+```
+
+Pages captured with a caveat (for example a load timeout or unfinished images) are reported
+separately as **warnings** and don't fail the run.
 
 ## Common failure modes
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
 | `net::ERR_NAME_NOT_RESOLVED` | The domain doesn't resolve — typo, or a `--replace-origin` pointed at a host that isn't running | Check the URL, or confirm the target server is reachable |
-| `Timeout 30000ms exceeded` | The page never satisfied `--wait-until` in time — most often `networkidle` on a page with a lingering connection (analytics, polling, websocket) | Try `--wait-until load` (the default) instead of `networkidle`, raise `--timeout`, or use `--wait` for a specific selector |
+| `Timeout 30000ms exceeded` | The page never satisfied `--wait-until` and never rendered, or you passed `--strict-load`. Most often `networkidle` on a page with a lingering connection | Try `--wait-until domcontentloaded`, raise `--timeout`, or use `--wait` for a specific selector. By default a *usable* page that only misses `load` is captured with a warning instead |
+| `"load" didn't fire within 30000ms … captured anyway` (a warning) | A slow or stalled request kept `load` from firing, but the page itself rendered | Nothing is wrong with the capture. Use `--wait-until domcontentloaded` to skip the wait, or `--strict-load` to treat it as a failure |
+| Screenshot has large blank areas between the top and the footer | The page reveals sections on scroll. Sections never scrolled into view stay hidden | Scrolling is on by default. If you passed `--no-scroll`, remove it. See [Scroll warm-up](/docs/core-concepts/capture#scroll-warm-up) |
+| `N of M image(s) didn't finish loading` (a warning), images show alt text | The host served images too slowly, or blocked headless Chromium | Raise `--image-wait` (for example `30000`), try `--user-agent` with a normal browser string, and time the image URL with `curl` |
+| `Chromium isn't installed for Playwright` | The browser download was skipped during install | Run `npx playwright install chromium` |
+| `Invalid URL` / `N invalid URLs in …` | A URL is malformed. All problems are listed together before capture starts | Fix the listed entries. A missing scheme is added for you |
+| `--header "…" must look like "Key: Value"` | A header flag had no colon | Write it as `"Key: Value"` |
+| `shotsweep.config.json is not valid` | The config file exists but isn't valid JSON | Fix the syntax. An invalid config is never silently ignored |
+| Self-signed certificate error on staging | Chromium rejects the certificate | Add `--ignore-https-errors` for staging only |
 | No screenshots produced, run exits with "No URLs resolved" | Input source (sitemap, CSV, paths file) resolved to zero URLs | Run with `--dry-run` to see exactly what was resolved |
 | Auth pages capture a login screen instead of content | Session file is stale, or the wrong auth flag was used | Re-run `shotsweep login` to refresh `auth.json` |
 | `--cookie` throws "needs a Domain=... attribute" | A cookie flag was passed without `; Domain=...` | Add the domain, e.g. `"session=xyz; Domain=example.com"` |
@@ -37,7 +54,8 @@ See [Debugging](/docs/automation/debugging) for the full range of diagnostic out
 
 ## Check the manifest directly
 
-A failed entry in `manifest.json` looks like this — no `file`, an `error` instead:
+A failed entry in `manifest.json` looks like this — no `file`, an `error` instead (ANSI colour
+codes from the browser are stripped, so the message is plain text):
 
 ```json filename="manifest.json"
 {
@@ -54,4 +72,4 @@ See [The Manifest](/docs/output/manifest) for the full shape.
 ## Still stuck?
 
 Open an issue with the exact command you ran and the `--debug` output attached:
-[github.com/nforshifu234dev/nfsfu234-shotsweep/issues](https://github.com/nforshifu234dev/nfsfu234-shotsweep/issues)
+[github.com/nforshifu234dev/shotsweep/issues](https://github.com/nforshifu234dev/shotsweep/issues)

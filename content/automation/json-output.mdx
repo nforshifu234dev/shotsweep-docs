@@ -18,13 +18,23 @@ shotsweep capture --url https://example.com --json
 {
   "ok": 1,
   "failed": 0,
+  "warnings": 0,
   "total": 1,
   "durationMs": 2417,
   "avgMs": 2417,
   "manifestPath": "screenshots/manifest.json",
-  "zipPath": null
+  "zipPath": null,
+  "recordPath": "screenshots/run-record.json",
+  "failures": []
 }
 ```
+
+`failures` lists each failed page as `{ "url", "viewport", "error" }`, so a script can report why
+without opening the manifest. `warnings` counts pages captured with a caveat (see
+[Troubleshooting](/docs/troubleshooting)); it doesn't affect the exit code.
+
+If the run can't start at all (an invalid URL, an unreadable config file), `--json` prints a single
+`{ "error": "..." }` line and exits non-zero.
 
 ## Diff
 
@@ -44,10 +54,13 @@ Example:
     "added": 1,
     "removed": 0,
     "sizeChanged": 0,
+    "errors": 0,
     "regressions": 2
   },
   "reportPath": "diff/diff-report.json",
-  "zipPath": null
+  "zipPath": null,
+  "environment": { "comparable": true, "drift": [] },
+  "decision": { "verdict": "fail", "regressions": 2, "environmentDriftDetected": false }
 }
 ```
 
@@ -55,9 +68,10 @@ The `regressions` value represents the number of results that currently count as
 
 By default:
 
-    regressions = changed + sizeChanged
+    regressions = changed + sizeChanged + errors
 
 `added` and `removed` are reported separately and do not contribute to the regression count.
+`errors` counts pages whose screenshots couldn't be compared.
 
 ## Text output for humans
 

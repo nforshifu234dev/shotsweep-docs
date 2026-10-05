@@ -17,12 +17,15 @@ shotsweep capture --sitemap https://example.com/sitemap.xml --offset 50 --limit 
 ```
 
 `--offset` skips that many resolved URLs before starting; `--limit` caps how many are captured
-after that.
+after that. `--limit` must be a positive integer and `--offset` must be `0` or more; anything
+else is rejected with a clear message. An `--offset` that skips every URL stops with an error
+instead of silently capturing nothing.
 
 ## Resuming after a crash
 
-`--resume` skips URL + viewport pairs that already succeeded in `--out`'s existing manifest,
-instead of re-capturing everything:
+`--resume` skips URL + viewport pairs that already succeeded in `--out`'s existing manifest **and
+whose screenshot file is still on disk**, instead of re-capturing everything. If you've deleted a
+screenshot, it is captured again:
 
 ```bash filename="terminal"
 shotsweep capture --sitemap https://example.com/sitemap.xml --out ./screenshots --resume

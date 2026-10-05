@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 const PACKAGE_NAME = '@nfsfu234/shotsweep'
-const FALLBACK_VERSION = '0.1.0'
+const FALLBACK_VERSION = '1.3.0'
 
 /**
  * Reads the live version straight from the npm registry so it can never
