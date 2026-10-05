@@ -58,6 +58,7 @@ ShotSweep's default CI policy is:
 | --- | --- |
 | `changed` | Yes |
 | `size-changed` | Yes |
+| `error` | Yes |
 | `unchanged` | No |
 | `added` | No |
 | `removed` | No |
@@ -66,6 +67,7 @@ Therefore:
 
 - A genuine visual change fails the step.
 - A screenshot resize fails the step.
+- A page whose screenshots couldn't be compared fails the step.
 - An intentionally added page does not fail the step.
 - An intentionally removed page does not fail the step.
 
@@ -124,7 +126,7 @@ when needed.
 Both commands are designed to gate a pipeline:
 
 - `capture` sets a non-zero exit code if any page failed to capture.
-- `diff` sets a non-zero exit code when `changed` or `size-changed` results are present.
+- `diff` sets a non-zero exit code when `changed`, `size-changed` or `error` results are present.
 - `added` and `removed` results do not fail the build by default.
 
 This allows CI to use the process exit code as the gate while using JSON, text, and the diff
@@ -184,6 +186,27 @@ are caught before the pull request is merged.
 
 ## Caching the browser
 
-Playwright downloads a Chromium build on install. Cache `~/.cache/ms-playwright` or your
-platform's equivalent between CI runs to avoid re-downloading it every time.
+Playwright downloads a Chromium build on install. Cache it between CI runs to avoid
+re-downloading it every time:
 
+| Platform | Cache path |
+| --- | --- |
+| Linux | `~/.cache/ms-playwright` |
+| macOS | `~/Library/Caches/ms-playwright` |
+| Windows | `%USERPROFILE%\AppData\Local\ms-playwright` |
+
+Windows runners are noticeably slower than Linux ones at installs and browser startup, so caching
+helps most there. `actions/setup-node` with `cache: npm` also speeds up `npm ci`.
+
+## Keep baselines comparable
+
+Capture the baseline and the current run with the **same ShotSweep version and the same runner
+image**. `diff` warns about [environment drift](/docs/visual-comparison/diff#environment-drift)
+when they differ, and renderer differences can look like page changes. After upgrading ShotSweep,
+re-capture the baseline (see [Upgrading to 1.3](/docs/upgrading)).
+
+## Don't send tokens to third parties
+
+In CI you often pass `--bearer $TOKEN` or `--header`. These go only to the site being captured and
+its subdomains, never to the fonts, analytics or CDN hosts the page loads. See
+[Where credentials are sent](/docs/authentication/headers-cookies#where-credentials-are-sent).

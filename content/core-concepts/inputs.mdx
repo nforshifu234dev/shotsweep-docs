@@ -23,10 +23,45 @@ shotsweep capture --sitemap https://example.com/sitemap.xml
 shotsweep capture --base http://localhost:3000 --paths paths.json
 ```
 
+## Forgiving URLs
+
+ShotSweep cleans up a URL before it does anything else, so a small slip fails fast with a clear
+message instead of an opaque `Invalid URL` later:
+
+| You type | ShotSweep uses |
+| --- | --- |
+| `example.com` | `https://example.com` |
+| `localhost:3000/pricing` | `http://localhost:3000/pricing` |
+| `[example.com](https://example.com)` (a pasted Markdown link) | `https://example.com` |
+| `"https://example.com"` or `<https://example.com>` | `https://example.com` |
+
+Scheme-less hosts get `https://`, except `localhost`, loopback addresses and `*.local` names,
+which get `http://`. Only `http`, `https` and `file` URLs can be captured.
+
+Every invalid entry in a list is reported together, up front, before a browser starts:
+
+```text
+2 invalid URLs in urls.txt:
+  - Invalid URL "http://" — expected something like https://example.com/path.
+  - Invalid URL "a b" — expected something like https://example.com/path.
+```
+
+Duplicates are removed (`https://x.com` and `https://x.com/` count as one page).
+
+## Input files
+
+`--urls` and `--paths` accept a JSON array of strings or a newline-delimited file. In a
+newline-delimited file, blank lines and lines starting with `#` are ignored. A leading UTF-8 byte
+order mark, which Windows editors and PowerShell's `>` add, is handled, as it is for CSV files
+saved from Excel.
+
 ## Sitemap indexes
 
 When `--sitemap` points at a sitemap-index file (a sitemap of sitemaps), ShotSweep fetches and
 flattens every nested sitemap automatically — you don't need to enumerate them yourself.
+Gzip-compressed sitemaps (`.xml.gz`) work too. Each sitemap fetch times out after 30 seconds, a
+sitemap that references itself is only fetched once, and nesting deeper than 5 levels stops with
+an error rather than looping.
 
 ## CSV column detection
 
@@ -54,3 +89,9 @@ screenshots/
     └── about/
         └── full-1440x900.png
 ```
+
+Two different URLs never share a folder:
+
+- A non-default **port** is part of the host folder: `localhost_3000` and `localhost_4000`.
+- URLs with a **query string** (`/search?q=a`, `/search?q=b`), **non-ASCII** paths, or very long
+  paths get a short hash suffix, for example `search__2637f243`, so one can't overwrite another.

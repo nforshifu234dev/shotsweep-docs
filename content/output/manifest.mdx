@@ -21,7 +21,10 @@ Each entry corresponds to one screenshot (or one failed attempt):
     "viewport": "1440x900",
     "file": "screenshots/example.com/home/full-1440x900.png",
     "sizeBytes": 482113,
-    "timestamp": "2026-08-10T09:14:22.104Z"
+    "timestamp": "2026-08-10T09:14:22.104Z",
+    "warnings": [
+      "19 of 19 image(s) didn't finish loading and will appear blank or as alt text. Try --image-wait 30000, ..."
+    ]
   },
   {
     "url": "https://example.com/dashboard",
@@ -34,8 +37,40 @@ Each entry corresponds to one screenshot (or one failed attempt):
 ```
 
 Successful entries have `file` and `sizeBytes`; failed entries have `error` instead, with no
-`file`. A `capture` run appends to any existing manifest at the same `--out` path rather than
-overwriting it, so repeated runs into the same directory accumulate history.
+`file`. Two optional fields add detail:
+
+- `warnings` — present when a page was captured with a caveat, such as a `load` timeout or images
+  that didn't finish. The capture still succeeded.
+- `selector` — present on `--mode element` entries.
+
+`file` always uses forward slashes, even when captured on Windows, so a manifest from one machine
+can be compared on another (for example `diff` in Linux CI). Any `user:password@` in a URL is
+masked.
+
+### How repeated runs merge
+
+A `capture` run merges into any existing manifest at the same `--out` path instead of overwriting
+it. Entries are tracked per job (URL + mode + viewport, plus the selector for element captures):
+
+- A job that **succeeds** replaces every earlier entry for that job, including old errors.
+- A job that **fails** replaces earlier errors for that job but keeps an earlier success, since
+  that screenshot is still on disk.
+- Entries for other jobs are left alone.
+
+So the manifest reflects the current state of the folder instead of growing with stale failures.
+It is written atomically, so an interrupted run can't leave a half-written file. If an existing
+`manifest.json` can't be parsed, it is moved aside as `manifest.json.corrupt-<timestamp>` and a
+fresh one is started, rather than being overwritten.
+
+## The run record
+
+Unless you pass `--no-record`, each run also writes `run-record.json` next to the manifest: a
+snapshot of the tool version, Playwright and Chromium versions, Node version, OS and architecture,
+the resolved configuration, and a SHA-256 hash of every screenshot from that run.
+
+`--bearer`, `--header`, `--cookie` and `--session` are recorded as `[REDACTED]`, and credentials
+inside URLs are masked. `shotsweep diff` reads the record to flag
+[environment drift](/docs/visual-comparison/diff#environment-drift) between two runs.
 
 ## Where it's used
 

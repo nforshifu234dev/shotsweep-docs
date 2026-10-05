@@ -31,17 +31,28 @@ Take screenshots of one or more pages.
 | `--base <url>` | Base URL to prepend to `--paths` |
 | `--paths <file>` | JSON array or newline-delimited file of relative paths, used with `--base` |
 | `--replace-origin <url>` | Rewrite every resolved URL's origin to this |
-| `--limit <n>` | Capture at most this many resolved URLs |
-| `--offset <n>` | Skip this many resolved URLs before capturing |
+| `--limit <n>` | Capture at most this many resolved URLs (positive integer) |
+| `--offset <n>` | Skip this many resolved URLs before capturing (`0` or more) |
+
+URLs don't need a scheme: `example.com` becomes `https://example.com` (`http://` for
+`localhost` and loopback addresses), and a pasted Markdown link such as
+`[x](https://x.com)` is unwrapped. See [Inputs & Sitemaps](/docs/core-concepts/inputs#forgiving-urls).
 
 **Capture behavior**
 
 | Flag | Description | Default |
 | --- | --- | --- |
-| `--mode <mode>` | `full` or `sections` | `full` |
+| `--mode <mode>` | `full`, `sections` or `element` | `full` |
+| `--selector <css>` | CSS selector of the single element to capture. **Required** with `--mode element` | — |
 | `--viewport <WxH\|preset>` | Repeatable, e.g. `--viewport 1440x900` | `desktop` |
 | `--wait-until <domcontentloaded\|load\|networkidle>` | What counts as "page loaded" before capturing | `load` |
-| `--wait <ms\|selector>` | Wait a fixed ms or for a CSS selector, after `--wait-until` resolves | — |
+| `--wait <ms\|selector>` | Wait a fixed ms or for a CSS selector, after `--wait-until` resolves. A selector that never appears is capped by `--timeout` and recorded as a warning | — |
+| `--no-scroll` | Skip the top-to-bottom scroll that triggers scroll-reveal animations and lazy-loaded images | scroll is **on** for `full` and `sections` |
+| `--image-wait <ms>` | After scrolling, how long to wait for images still loading. Unfinished images are reported as a warning | `10000` |
+| `--strict-load` | Fail a page when `--wait-until` times out, instead of capturing it anyway with a warning | `false` |
+| `--freeze-animations` | Fast-forward finite CSS animations and cancel infinite ones while capturing | `false` |
+| `--user-agent <string>` | Present this User-Agent instead of headless Chromium's | — |
+| `--ignore-https-errors` | Accept invalid or self-signed TLS certificates | `false` |
 | `--dark` | Emulate `prefers-color-scheme: dark` | `false` |
 | `--out <dir>` | Output directory | `./screenshots` |
 
@@ -50,18 +61,19 @@ Take screenshots of one or more pages.
 | Flag | Description |
 | --- | --- |
 | `--session <file>` | Reuse a saved storageState session |
-| `--bearer <token>` | Sets `Authorization: Bearer <token>` on every request |
-| `--header <"Key: Value">` | Repeatable, arbitrary request header |
-| `--cookie <"name=value; Domain=...">` | Repeatable cookie to inject (needs a `Domain=`) |
+| `--bearer <token>` | Sets `Authorization: Bearer <token>` on requests to the captured site (and its subdomains) |
+| `--header <"Key: Value">` | Repeatable, arbitrary request header, sent to the captured site only |
+| `--headers-all-origins` | Send `--bearer` / `--header` values to **every** origin the page contacts, including third parties |
+| `--cookie <"name=value; Domain=...">` | Repeatable cookie to inject (needs a `Domain=`; also accepts `Path=`, `Secure`, `HttpOnly`, `SameSite=`) |
 
 **Reliability & recovery**
 
 | Flag | Description | Default |
 | --- | --- | --- |
 | `--concurrency <n>` | Pages captured in parallel | `1` |
-| `--timeout <ms>` | Timeout for each page load | `30000` |
+| `--timeout <ms>` | Timeout for each page load, selector wait and screenshot | `30000` |
 | `--retries <n>` | Retry a failed page load this many times | `0` |
-| `--resume` | Skip URL+viewport pairs already captured in `--out`'s manifest | `false` |
+| `--resume` | Skip full-page URL+viewport pairs already captured in `--out`'s manifest whose screenshot file still exists | `false` |
 
 **Output & scripting**
 
@@ -74,6 +86,7 @@ Take screenshots of one or more pages.
 | `--verbose` | Print one persistent line per completed job, instead of an overwriting spinner | `false` |
 | `--quiet` | Suppress the live progress line | `false` |
 | `--describe` | Print an AI-ready summary of the captured screenshots | `false` |
+| `--no-record` | Skip writing `run-record.json` (tool, browser and OS versions, resolved config, artifact hashes) | the record is written |
 
 ## `shotsweep login`
 
@@ -129,7 +142,12 @@ and `shotsweep diff` run with fewer flags.
 }
 ```
 
-Top-level keys are shared defaults for both commands.
+Top-level keys are shared defaults for both commands. Repeatable options such as `viewport` accept
+either a single string or an array.
+
+A config file that exists but isn't valid JSON stops the run with an error naming the file, so a
+typo never silently turns into default settings. Keys that don't match any option are reported as
+warnings (on stderr) and ignored.
 
 A `"diff"` sub-object overrides shared keys specifically for `shotsweep diff`.
 

@@ -80,6 +80,7 @@ Each matched or unmatched screenshot resolves to one status:
 | `added`        | Present in the new manifest only              |
 | `removed`      | Present in the old manifest only              |
 | `size-changed` | Image dimensions differ between runs          |
+| `error`        | A screenshot couldn't be compared (missing file or not a valid PNG) |
 
 ## Regression policy
 
@@ -91,12 +92,16 @@ By default, the following policy is used:
 | -------------- | ---------- | --------- |
 | `changed`      | Yes        | ❌ Fail    |
 | `size-changed` | Yes        | ❌ Fail    |
+| `error`        | Yes        | ❌ Fail    |
 | `unchanged`    | No         | ✅ Pass    |
 | `added`        | No         | ✅ Pass    |
 | `removed`      | No         | ✅ Pass    |
 
 A `changed` result means the pixels changed beyond the configured threshold.
 A `size-changed` result means the screenshot dimensions changed.
+An `error` result means a screenshot listed in a manifest was missing or unreadable, so the page
+couldn't be compared. It is reported for that page and **fails the run**: a page that couldn't be
+checked is not a page that passed.
 
 Added and removed pages are reported in `diff-report.json` but do not fail the
 diff by default. This allows intentional additions and removals to be reviewed
@@ -118,7 +123,8 @@ Visual regression summary
 ```
 
 In this example, the diff exits with code `1` because there is one changed page
-and one resized page.
+and one resized page. When a page couldn't be compared, the summary adds an
+`Errors : N (could not be compared)` line, and those pages count toward the regression total.
 
 A run containing only added or removed pages exits successfully:
 
@@ -138,6 +144,37 @@ Visual regression summary
 This policy is intended to work well both locally and in CI/CD pipelines.
 Teams can inspect added or removed pages while still using `changed` and
 `size-changed` as the default merge-blocking visual failures.
+
+## Environment drift
+
+A pixel difference isn't always a page change: a different Chromium version, operating system or
+font renderer can shift text by a pixel. When both manifests have a `run-record.json` next to them
+(written by `capture` unless you pass `--no-record`), `diff` compares the tool, Playwright,
+Chromium and Node versions and the OS and architecture of the two runs, and warns if any differ:
+
+```text
+⚠ Environment drift detected between baseline and current run — this diff's verdict may reflect
+environment changes, not just page changes:
+    - Chromium version differs: 152.0.0.0 (baseline) vs 153.0.0.0 (current)
+```
+
+The same information is in `diff-report.json` (a `provenance` block, plus a `decision` block with
+the verdict and regression count, and a SHA-256 hash of each `old.png`, `new.png` and `diff.png`).
+A manifest with no `run-record.json` diffs exactly as before, just without the drift check.
+
+## Comparing runs from different machines
+
+`file` paths in a manifest are recorded relative to where the capture ran. `diff` finds the
+screenshots even when a manifest has been moved to another folder, copied from another machine, or
+written on Windows and read on Linux. Pages are matched by URL and viewport, so
+`https://example.com` and `https://example.com/` are the same page.
+
+## Re-baseline after upgrading to 1.3
+
+ShotSweep 1.3 scrolls pages before capturing, so scroll-reveal content now appears where earlier
+versions captured blank areas. A baseline captured with an older version will therefore differ from
+a new capture of the same unchanged page. Capture a fresh baseline with the new version before
+comparing. See [Upgrading to 1.3](/docs/upgrading).
 
 ## Summary output
 
@@ -196,7 +233,7 @@ See [JSON Output](/docs/automation/json-output).
 
 ## Exit code
 
-`diff` exits non-zero when the run contains any `changed` or `size-changed`
+`diff` exits non-zero when the run contains any `changed`, `size-changed` or `error`
 result.
 
 `added` and `removed` results are reported but do not fail the diff by default.
@@ -205,6 +242,7 @@ This makes the default CI policy:
 
 * `changed` → fail
 * `size-changed` → fail
+* `error` → fail
 * `unchanged` → pass
 * `added` → pass
 * `removed` → pass

@@ -13,11 +13,30 @@ If your app doesn't need a full login flow, pick whichever mechanism matches it.
 shotsweep capture --sitemap https://example.com/sitemap.xml --bearer $API_TOKEN
 ```
 
-Sets `Authorization: Bearer <token>` on every request in the run.
+Sets `Authorization: Bearer <token>` on requests to the site being captured.
+
+## Where credentials are sent
+
+`--bearer` and `--header` values go **only to the captured site and its subdomains**, never to
+third parties. A page loads fonts, analytics and assets from other hosts, and sending your token to
+all of them would leak it. A request counts as the same site when its host is the captured host,
+one of its subdomains, or its parent domain. Capturing `https://www.example.com` sends the token
+to `www.example.com`, `example.com` and `api.www.example.com`, but not to `fonts.googleapis.com`,
+`cdn.other.net`, or the sibling `app.example.com`. The port must match too, so `localhost:3000`
+credentials aren't sent to `localhost:4000`, and `localhost` and `127.0.0.1` are treated as
+different sites.
+
+If you really need every request to carry the header, for example an API on an unrelated domain,
+opt in explicitly:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --bearer $API_TOKEN --headers-all-origins
+```
 
 ## Custom headers
 
-`--header` is repeatable:
+`--header` is repeatable, and each value must look like `Key: Value`. A malformed value such as
+`--header "no-colon"` stops the run with an error instead of being skipped:
 
 ```bash filename="terminal"
 shotsweep capture --url https://staging.example.com --header "X-Environment: staging"
@@ -31,6 +50,14 @@ shotsweep capture --url https://staging.example.com --header "X-Environment: sta
 shotsweep capture --url https://example.com --cookie "session=xyz; Domain=example.com"
 ```
 
+Optional attributes: `Path=` (defaults to `/`), `Secure`, `HttpOnly`, and
+`SameSite=Strict|Lax|None`:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com \
+  --cookie "session=xyz; Domain=example.com; Secure; HttpOnly; SameSite=Lax"
+```
+
 ## Combining mechanisms
 
 `--session`, `--bearer`, `--header`, and `--cookie` can all be combined in a single run — for
@@ -42,5 +69,8 @@ shotsweep capture \
   --session auth.json \
   --header "X-Environment: staging"
 ```
+
+Credentials never appear in the output: `run-record.json` stores `--bearer`, `--header`,
+`--cookie` and `--session` as `[REDACTED]`, and `user:password@` inside a URL is masked.
 
 For a full login flow instead, see [Login Sessions](/docs/authentication/login-sessions).

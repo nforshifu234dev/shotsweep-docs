@@ -1,0 +1,49 @@
+---
+title: Upgrading to 1.3
+description: What changed in ShotSweep 1.3 that can affect existing captures, baselines and CI.
+---
+
+# Upgrading to 1.3
+
+```bash filename="terminal"
+npm install -g @nfsfu234/shotsweep@latest
+```
+
+No command or flag was removed in 1.3. A few defaults changed, though, and they can change what
+your existing runs produce.
+
+## What may behave differently
+
+| Change | What you may notice | What to do |
+| --- | --- | --- |
+| Pages are **scrolled before capture** | Scroll-reveal sections and lazy images that used to come out blank now appear, so screenshots (and diffs against old baselines) differ | Re-capture your baseline with 1.3. Use `--no-scroll` to keep the old behaviour |
+| A page that only misses `load` is **captured with a warning** instead of failing | Runs that used to fail with `Timeout 30000ms exceeded` now succeed, with a warning in the manifest | Use `--strict-load` to keep failing on it |
+| `--bearer` and `--header` go **only to the captured site** | An API on an unrelated domain no longer receives your token | Add `--headers-all-origins` if you need the old behaviour |
+| **Folder names** for URLs with a port, query string or non-ASCII path changed | `localhost:3000` captures now land in `localhost_3000/`, and `?q=` URLs get a hash suffix | Update any script that reads screenshots by path. Use `manifest.json` instead of guessing paths |
+| `manifest.json` entries are **replaced per job** | Old error entries no longer pile up on re-runs | Nothing. Your manifest now reflects the folder |
+| `manifest.json` paths use `/` | Windows manifests are readable on Linux | Nothing |
+| `diff` counts unreadable screenshots as **errors** | A missing or corrupt screenshot now fails the diff instead of crashing it | Nothing, unless you relied on the crash |
+| A broken `shotsweep.config.json` **stops the run** | A config typo is no longer silently ignored | Fix the file. Unknown keys are warnings |
+
+## Re-baselining
+
+If you run `shotsweep diff` in CI against a stored baseline, capture a new baseline with 1.3 and
+commit or upload it before relying on diffs again:
+
+```bash filename="terminal"
+shotsweep capture --sitemap https://example.com/sitemap.xml --out ./screenshots/baseline
+```
+
+Keep the baseline and the current run on the same ShotSweep version and runner image.
+[Environment drift](/docs/visual-comparison/diff#environment-drift) warns when they differ.
+
+## New in 1.3
+
+- [Scroll warm-up](/docs/core-concepts/capture#scroll-warm-up) and
+  [image waiting](/docs/core-concepts/capture#images-that-dont-finish-loading)
+- [Pages that never finish loading](/docs/core-concepts/waiting#pages-that-never-finish-loading)
+- [Forgiving URLs](/docs/core-concepts/inputs#forgiving-urls) and clearer input errors
+- [Credential scoping](/docs/authentication/headers-cookies#where-credentials-are-sent)
+- `--freeze-animations`, `--user-agent`, `--ignore-https-errors`, `--image-wait`, `--strict-load`,
+  `--no-scroll` and `--headers-all-origins` in the [CLI reference](/docs/cli-reference)
+  

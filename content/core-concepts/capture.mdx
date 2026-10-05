@@ -46,7 +46,77 @@ With `--debug`, you can see this decision as it happens:
 Section files are numbered in scroll order: `section-01-<W>x<H>.png`, `section-02-<W>x<H>.png`,
 and so on.
 
+## Element capture
+
+`--mode element` screenshots a single element, cropped to its own bounding box rather than the
+full page or viewport. `--selector` is required, and omitting it fails immediately, before any
+page is opened:
+
+```bash filename="terminal"
+shotsweep capture \
+  --url https://example.com \
+  --mode element \
+  --selector "[data-og-hero]"
+```
+
+The file name records the element's rendered size, for example `element-1200x630.png`. Useful for
+generating a social-share image from a page's real hero section, or for baselining one component.
+
+ShotSweep waits for the element to be visible and lets its own finite animations and transitions
+finish (up to 2 seconds) before capturing, so an entrance animation isn't caught half-faded.
+
+## Scroll warm-up
+
+Before a `full` or `sections` capture, ShotSweep scrolls the page from top to bottom and back.
+Many sites reveal sections only when they scroll into view (fade-ins, AOS, scroll-triggered
+animations) and lazy-load images below the first screen. A page that has never been scrolled
+screenshots as large blank areas, with only the first screen and the footer visible.
+
+```text
+open page → scroll through it → wait for images → return to top → screenshot
+```
+
+The scroll is bounded so it can't run forever: it stops after about 20 seconds or 60,000px (an
+infinite-scroll feed), and gives up early if the page won't scroll at all (a locked body or an
+open modal). A page that fails mid-scroll is still captured as it stands.
+
+Scrolling is on by default. Turn it off to capture the page exactly as first rendered:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --no-scroll
+```
+
+With `--debug` you can see what the warm-up did:
+
+```text
+[debug] Scroll warm-up: scrolled to 14459px of 14459px; images: 19 total, 0 still loading, 0 broken
+```
+
+### Images that don't finish loading
+
+After scrolling, ShotSweep waits up to `--image-wait` (default 10 seconds) for images that are
+still loading, and re-requests any that were cancelled earlier. Whatever is still unfinished is
+cancelled so it can't hang the screenshot, and the capture succeeds with a warning:
+
+```text
+⚠ https://example.com (1440x900): 19 of 19 image(s) didn't finish loading and will appear blank
+or as alt text. Try --image-wait 30000, or check whether the host is slow or blocking headless
+browsers (--user-agent).
+```
+
+Warnings are written to the [manifest](/docs/output/manifest) and printed under the run summary.
+They don't change the exit code.
+
+### Very tall pages
+
+Chromium can clip a single screenshot that is extremely tall. ShotSweep warns when a full-page
+image is 16,384px or taller; use `--mode sections` for pages that long.
+
 ## Choosing a mode
 
 - **Full page** — best for a single reference image per page, and for `shotsweep diff`.
 - **Sections** — best for very long pages, or when you want fixed-height images for a report.
+- **Element** — best for one component, such as a hero section for a share image.
+
+Re-running `--mode sections` removes section files left by an earlier run at the same viewport, so
+a page that got shorter doesn't keep stale `section-NN` images next to the new ones.

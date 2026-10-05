@@ -22,3 +22,6 @@ EOF
 previews
 FUTURE.txt
 test-capture/
+
+zip_project.py
+*.zip

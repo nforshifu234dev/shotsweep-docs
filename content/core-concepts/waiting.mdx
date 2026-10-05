@@ -19,6 +19,9 @@ shotsweep capture --url https://example.com --wait-until load
 | `domcontentloaded` | The HTML to be parsed — fastest, but before images/late scripts finish. |
 | `networkidle` | Zero network activity for 500ms straight. |
 
+When `load` or `networkidle` doesn't arrive in time, see
+[Pages that never finish loading](#pages-that-never-finish-loading) below.
+
 The default is `load`, not `networkidle`. `networkidle` demands total network silence, so any
 page with a lingering connection — an analytics beacon, a polling request, an open websocket —
 can hang until the timeout even though the page has fully rendered. `load` waits for real
@@ -38,8 +41,10 @@ Any numeric value is treated as milliseconds, applied **after** `--wait-until` r
 shotsweep capture --url https://example.com --wait ".dashboard"
 ```
 
-Any non-numeric value is treated as a CSS selector — ShotSweep waits up to 15 seconds for it to
-appear before capturing (and continues anyway if it never does).
+Any non-numeric value is treated as a CSS selector. ShotSweep waits up to `--timeout` (30 seconds
+by default) for it to appear. If it never does, the page is captured anyway and a warning such as
+`--wait selector ".dashboard" didn't appear within 30000ms` is recorded in the manifest, which
+usually means the selector has a typo.
 
 ## When this matters
 
@@ -48,9 +53,39 @@ appear before capturing (and continues anyway if it never does).
 - React, Next.js, Vue, or Angular
 - client-side dashboards
 - animations or transitions
-- lazy-loaded or infinite-scroll content
+- lazy-loaded or infinite-scroll content (see [scroll warm-up](/docs/core-concepts/capture#scroll-warm-up))
 - pages with long-lived connections (analytics, chat widgets, websockets) that would never
   satisfy `networkidle`
+
+## Pages that never finish loading
+
+Real sites often never fire `load`. A tracker, chat widget, video or slow image can hold a request
+open for minutes on a page that is otherwise fully rendered. Failing the whole capture helps
+nobody, so ShotSweep handles it:
+
+1. If `--wait-until` times out but the document is already usable (`interactive` or `complete`),
+   ShotSweep **captures the page anyway**, cancels the stalled requests, and records a warning:
+
+   ```text
+   ⚠ https://example.com (1440x900): "load" didn't fire within 30000ms (document was interactive);
+   captured anyway.
+   ```
+
+2. A page that never rendered at all (still blank) is still recorded as an error.
+
+Choose the behaviour you want:
+
+| Flag | Effect |
+| --- | --- |
+| `--strict-load` | Fail the page when the wait times out, instead of capturing it with a warning |
+| `--wait-until domcontentloaded` | Don't wait for `load` at all. Images are still awaited after the scroll, see `--image-wait` |
+| `--timeout <ms>` | Give a slow page more time before the fallback applies |
+
+For a slow host, this is usually the fastest reliable setup:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --wait-until domcontentloaded --image-wait 30000
+```
 
 ## Timeouts and retries
 
@@ -60,6 +95,6 @@ Independently of waiting, every page load has its own timeout and retry budget:
 shotsweep capture --url https://example.com --timeout 45000 --retries 2
 ```
 
-`--timeout` (default `30000`ms) bounds the initial `page.goto()`. `--retries` (default `0`)
-re-attempts a failed page load that many additional times before the page is recorded as failed
-in the manifest.
+`--timeout` (default `30000`ms) bounds the initial `page.goto()`, a `--wait` selector, and each
+screenshot. `--retries` (default `0`) re-attempts a failed page load that many additional times,
+pausing a little longer before each retry, before the page is recorded as failed in the manifest.

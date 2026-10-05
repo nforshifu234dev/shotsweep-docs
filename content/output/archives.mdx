@@ -16,9 +16,13 @@ shotsweep capture --url https://example.com --zip
 shotsweep diff old/manifest.json new/manifest.json --out ./diff --zip
 ```
 
-The archive is written alongside the output directory, using the same path with a `.zip`
-extension — `./screenshots` becomes `./screenshots.zip`. The output directory itself isn't added
-as a parent folder inside the archive; its contents sit at the archive's root.
+The archive is written alongside the output directory, named after it — `./screenshots` becomes
+`./screenshots.zip`. The output directory itself isn't added as a parent folder inside the
+archive; its contents sit at the archive's root.
+
+With `--out .` (the current directory) the archive is written to the **parent** folder, named
+after the current folder, so it is never created inside the folder it is archiving. An archive that
+can't be written completely is reported as an error instead of silently producing a partial file.
 
 Both `capture` and `diff` print the resulting zip path when the run completes:
 

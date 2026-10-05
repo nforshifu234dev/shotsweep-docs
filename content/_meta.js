@@ -12,5 +12,6 @@ export default {
   recipes: 'Recipes',
   'cli-reference': 'CLI Reference',
   troubleshooting: 'Troubleshooting',
-  changelog: 'Changelog'
+  changelog: 'Changelog',
+  upgrading: 'Upgrading to 1.3'
 }
