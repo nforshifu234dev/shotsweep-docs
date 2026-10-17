@@ -23,8 +23,8 @@ instead of silently capturing nothing.
 
 ## Resuming after a crash
 
-`--resume` skips URL + viewport pairs that already succeeded in `--out`'s existing manifest **and
-whose screenshot file is still on disk**, instead of re-capturing everything. If you've deleted a
+`--resume` skips jobs that already succeeded in `--out`'s existing manifest **and whose
+screenshot files are all still on disk**, instead of re-capturing everything. If you've deleted a
 screenshot, it is captured again:
 
 ```bash filename="terminal"
@@ -34,10 +34,11 @@ shotsweep capture --sitemap https://example.com/sitemap.xml --out ./screenshots 
 Useful after a crash, a killed process, or a power loss partway through a large run — re-running
 the same command with `--resume` picks up where it left off.
 
-**Known limitation:** for `--mode sections`, only fully-successful `full`-mode jobs are trusted
-for resume. A `sections` job always re-captures on resume — a partial section write (say, a
-crash after section 12 of 17) currently can't be distinguished from zero sections written, so
-ShotSweep re-runs it to be safe rather than risk an incomplete set of section images.
+Resume works for every mode: `full`, `sections`, `element` and `scroll`. A job counts as
+complete when its **latest attempt succeeded** and **every file it wrote exists**, so a crash after
+section 12 of 17 (or after frame 6 of a scroll capture) re-captures that job instead of trusting a
+partial set. If the latest attempt failed, the job is re-captured even when an older success is
+still in the manifest.
 
 ## Seeing progress on a large run
 
@@ -54,4 +55,4 @@ shotsweep capture --sitemap https://example.com/sitemap.xml --concurrency 4 --ve
 ✓ https://example.com/about (1440x900) — 2/40
 ✗ https://example.com/dashboard (1440x900) — 3/40
 ...
-```
+```

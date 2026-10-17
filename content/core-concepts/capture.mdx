@@ -1,6 +1,6 @@
 ---
 title: Full-Page & Sectioned Capture
-description: Capture an entire page in one shot, or slice it into viewport-height sections.
+description: Capture an entire page in one shot, slice it into viewport-height sections, or capture one element.
 ---
 
 # Capture modes
@@ -65,9 +65,22 @@ generating a social-share image from a page's real hero section, or for baselini
 ShotSweep waits for the element to be visible and lets its own finite animations and transitions
 finish (up to 2 seconds) before capturing, so an entrance animation isn't caught half-faded.
 
+## Scroll capture
+
+`--mode scroll` takes a series of viewport-sized frames at successive scroll positions, for pages
+that animate as you scroll (pinned sections, scrubbed timelines, smooth-scroll libraries). A
+full-page screenshot can't play those animations.
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --mode scroll
+```
+
+See [Scroll Capture](/docs/core-concepts/scroll-capture) for frame names, options and a baseline
+workflow.
+
 ## Scroll warm-up
 
-Before a `full` or `sections` capture, ShotSweep scrolls the page from top to bottom and back.
+Before a `full` or `sections` capture (`scroll` mode scrolls the page itself), ShotSweep scrolls the page from top to bottom and back.
 Many sites reveal sections only when they scroll into view (fade-ins, AOS, scroll-triggered
 animations) and lazy-load images below the first screen. A page that has never been scrolled
 screenshots as large blank areas, with only the first screen and the footer visible.
@@ -117,6 +130,7 @@ image is 16,384px or taller; use `--mode sections` for pages that long.
 - **Full page** — best for a single reference image per page, and for `shotsweep diff`.
 - **Sections** — best for very long pages, or when you want fixed-height images for a report.
 - **Element** — best for one component, such as a hero section for a share image.
+- **Scroll** — best for scroll-driven animation, where you need to baseline how the page looks at each scroll position.
 
 Re-running `--mode sections` removes section files left by an earlier run at the same viewport, so
 a page that got shorter doesn't keep stale `section-NN` images next to the new ones.

@@ -21,14 +21,18 @@ Manifest: screenshots/manifest.json
 ```
 
 This writes screenshots into `./screenshots`, organized by hostname and page, plus a
-`manifest.json` describing every shot:
+`manifest.json` describing every shot. Each site folder carries its own `manifest.json` and
+`run-record.json` too, so a folder keeps its metadata if you move it:
 
 ```text
 screenshots/
 ├── tour-guide.nforshifu234dev.com/
-│   └── home/
-│       └── full-1440x900.png
-└── manifest.json
+│   ├── home/
+│   │   └── full-1440x900.png
+│   ├── manifest.json
+│   └── run-record.json
+├── manifest.json
+└── run-record.json
 ```
 
 <ExampleImage
@@ -67,3 +71,5 @@ shotsweep capture --sitemap https://tour-guide.nforshifu234dev.com/sitemap.xml -
 * Learn about the [input modes](/docs/core-concepts/inputs) — URL, CSV, sitemap, or paths.
 * Set up [authentication](/docs/authentication/login-sessions) for pages behind a login.
 * Run your first [visual diff](/docs/visual-comparison/diff) between two capture runs.
+* [Approve a change](/docs/visual-comparison/baselines) as the new baseline.
+* Capture a page that animates on scroll with [scroll capture](/docs/core-concepts/scroll-capture).

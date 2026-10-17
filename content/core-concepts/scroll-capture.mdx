@@ -1,0 +1,109 @@
+---
+title: Scroll Capture
+description: Capture pages that animate as you scroll, as a repeatable series of frames you can baseline and diff.
+---
+
+# Scroll capture
+
+```bash filename="terminal"
+shotsweep capture \
+  --url https://example.com \
+  --mode scroll \
+  --viewport 1440x900 \
+  --out baseline
+```
+
+Use `--mode scroll` for pages that *animate as you scroll*: pinned sections, GSAP ScrollTrigger
+scrubs, `animation-timeline: scroll()`, smooth-scroll libraries such as Lenis, and wheel-hijacked
+"fullpage" layouts.
+
+A full-page screenshot can't capture these. It resizes the viewport instead of scrolling, so the
+animation never advances and `100vh` stages stretch. `--mode scroll` instead scrolls to a series of
+positions and takes one viewport-sized screenshot at each.
+
+## How a frame is taken
+
+Before each screenshot ShotSweep waits for the frame to **stop moving**:
+
+1. The scroll position settles first, because smooth-scroll libraries glide to their target.
+2. Then the pixels settle. ShotSweep re-screenshots until two consecutive shots are identical,
+   which catches scrubbed tweens and lerped transforms that nothing announces.
+
+Two runs of the same page therefore produce the same frames, which is what makes a baseline usable.
+
+## Frame names
+
+Frames are named after their scroll position, so `diff` compares the same moment of the animation
+every time, even if the number of frames changes:
+
+```text
+scroll-y000000-1440x900.png
+scroll-y000450-1440x900.png
+...
+scroll-end-1440x900.png        <- always the very bottom of the page
+```
+
+Each [manifest](/docs/output/manifest) entry also records `scrollY` and `scrollMethod`, and
+`"settled": false` for a frame that never stopped changing.
+
+## Options
+
+| Flag | What it does | Default |
+| --- | --- | --- |
+| `--scroll-step <px\|%>` | Distance between frames, in pixels or as a percentage of the viewport height. Use a smaller step for fast animations | `50%` |
+| `--scroll-stop <px\|%>` | Repeatable. Capture exactly these offsets instead of an even grid. Pixels, or `N%` of the scrollable range; `100%` is the very bottom | — |
+| `--scroll-method <auto\|native\|wheel>` | `native` moves the real scroll position. `wheel` sends mouse-wheel events, for pages that hijack the wheel. `auto` uses `wheel` only when nothing scrolls natively | `auto` |
+| `--max-frames <n>` | Upper bound on frames per page and viewport. A warning says so if the page needs more (the bottom would be missing) | `60` |
+| `--frame-delay <ms>` | Minimum wait after each scroll before checking the frame has settled | `250` |
+| `--settle-timeout <ms>` | How long to wait for a frame to stop changing before keeping it anyway. `0` turns the check off | `3000` |
+
+Pin the moments that matter instead of an even grid:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --mode scroll \
+  --scroll-stop 0 --scroll-stop 50% --scroll-stop 100%
+```
+
+A config file works too. Leave `freezeAnimations` out of it, because freezing can flatten the
+scroll-linked animation you are trying to capture:
+
+```json filename="shotsweep.config.json"
+{
+  "mode": "scroll",
+  "viewport": "1440x900",
+  "scrollStep": "50%",
+  "scrollMethod": "auto",
+  "out": "./baseline"
+}
+```
+
+## Things worth knowing
+
+- **Looping animations never settle** (a spinner, a video, a carousel). Those frames are kept,
+  flagged `"settled": false`, and a warning suggests `--freeze-animations` or `--mask <css>` for the
+  moving element.
+- **If every frame comes out identical** on a page that does scroll, the page is probably driven by
+  the wheel rather than the scroll position. The run says so: re-run with `--scroll-method wheel`.
+- **Wheel-driven pages have no measurable height**, so capture stops once the content stops
+  changing (two identical frames in a row, the second is dropped) or at `--max-frames`. Percent
+  stops need a measurable range, so use pixels there.
+- **A preloader or intro animation** is best handled with [`--wait`](/docs/core-concepts/waiting).
+- **Re-running at a different step** removes the old frames at that viewport, so none are left
+  behind next to the new ones.
+- **`--resume`** works as for the other modes. See
+  [Resuming & Slicing Runs](/docs/core-concepts/resuming-and-slicing).
+- Scroll mode skips the [scroll warm-up](/docs/core-concepts/capture#scroll-warm-up), since it
+  scrolls the page itself.
+
+## Baseline workflow
+
+Make the baseline once, then compare any later run against it:
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --mode scroll --out baseline
+shotsweep capture --url https://example.com --mode scroll --out current
+shotsweep diff baseline/manifest.json current/manifest.json
+shotsweep approve current/manifest.json --to baseline    # when the changes are wanted
+```
+
+See [Approving Baselines](/docs/visual-comparison/baselines).

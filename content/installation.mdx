@@ -64,6 +64,19 @@ If you'd rather not allow install scripts, or the automatic download fails on a 
 npx playwright install chromium
 ```
 
+## Other browsers (Firefox, WebKit)
+
+`--browser firefox` and `--browser webkit` run the capture in those engines. They aren't installed
+automatically, so install the one you want first:
+
+```bash filename="terminal"
+npx playwright install firefox
+npx playwright install webkit
+```
+
+Chromium is the default and the only engine ShotSweep's own test suite covers, so treat the others
+as experimental. The engine used is recorded in `run-record.json`.
+
 ## One-time installation (no persistent config)
 
 Useful for CI or a machine where you don't want to save the setting:
@@ -86,7 +99,7 @@ npx --allow-scripts=@nfsfu234/shotsweep @nfsfu234/shotsweep capture --url https:
 shotsweep --help
 ```
 
-You should see the top-level commands: `capture`, `login`, `diff`.
+You should see the top-level commands: `capture`, `login`, `diff`, `approve`.
 
 ```bash filename="terminal"
 shotsweep --version

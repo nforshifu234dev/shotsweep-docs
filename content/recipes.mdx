@@ -50,6 +50,25 @@ shotsweep capture --sitemap https://example.com/sitemap.xml --session auth.json
 shotsweep capture --url https://example.com --mode sections
 ```
 
+### Capture a scroll-driven animation
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --mode scroll --viewport 1440x900 --out baseline
+```
+
+### Hide an ad slot or a clock from diffs
+
+```bash filename="terminal"
+shotsweep capture --url https://example.com --mask ".ad-slot" --mask "[data-testid=clock]"
+```
+
+### Accept an intended visual change
+
+```bash filename="terminal"
+shotsweep diff baseline/manifest.json screenshots/manifest.json --out diff
+shotsweep approve screenshots/manifest.json --to baseline --from-report diff/diff-report.json
+```
+
 ### Generate an AI-ready summary
 
 ```bash filename="terminal"

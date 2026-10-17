@@ -1,0 +1,56 @@
+---
+title: Approving Baselines
+description: Promote a reviewed capture run to be the new baseline with shotsweep approve.
+---
+
+# Approving baselines
+
+When a diff shows changes you *want*, promote the new run to be the baseline:
+
+```bash filename="terminal"
+# review first
+shotsweep diff baseline/manifest.json screenshots/manifest.json --out diff
+
+# approve everything in the new run
+shotsweep approve screenshots/manifest.json --to baseline
+
+# or approve only the pages the diff flagged (everything else keeps its baseline)
+shotsweep approve screenshots/manifest.json --to baseline --from-report diff/diff-report.json
+
+# preview without copying anything
+shotsweep approve screenshots/manifest.json --to baseline --dry-run
+```
+
+## What `approve` does
+
+- Copies the screenshots into the baseline folder and merges them into `baseline/manifest.json`.
+- **Never promotes a page whose latest capture failed.**
+- Appends an audit entry (time, source run, file list with SHA-256 hashes) to
+  `baseline/approvals.json`.
+- Adopts the run's `run-record.json` when you approve a whole run, so
+  [environment-drift](/docs/visual-comparison/diff#environment-drift) checks compare against the
+  environment the baseline was actually made in.
+
+## Options
+
+| Flag | Description |
+| --- | --- |
+| `<manifest>` | The run's `manifest.json` to promote (a site folder's `manifest.json` works too) |
+| `--to <dir>` | Baseline folder to write into. Created if needed. **Required** |
+| `--from-report <file>` | Only promote the pages this `diff-report.json` flagged as changed, resized or added |
+| `--dry-run` | Show what would be promoted without copying anything |
+| `--json` | Print the result as JSON |
+
+`approve` exits non-zero if nothing was promoted, so a typo in the path or an empty report doesn't
+pass silently.
+
+## Approving one site folder
+
+A site folder's own `manifest.json` can be promoted on its own. It lands under the matching folder
+in the baseline:
+
+```bash filename="terminal"
+shotsweep approve screenshots/example.com/manifest.json --to baseline   # lands under baseline/example.com/
+```
+
+See [The Manifest](/docs/output/manifest#per-site-folders).

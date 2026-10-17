@@ -1,0 +1,55 @@
+---
+title: Reducing False Positives
+description: Mask, ignore and tolerate the volatile parts of a page so diffs only fail on real changes.
+---
+
+# Reducing false positives
+
+Pixel diffs fail for boring reasons: a clock, a rotating banner, a page that is three pixels taller
+than last time. Four tools deal with that, from best to bluntest:
+
+```bash filename="terminal"
+# 1. Don't capture it: cover volatile elements at capture time
+shotsweep capture --sitemap https://example.com/sitemap.xml \
+  --mask ".ad-slot" --mask "[data-testid=clock]" --mask-color "#000"
+
+# 2. Don't compare it: exclude pixel regions at diff time (repeatable)
+shotsweep diff old/manifest.json new/manifest.json --ignore 0,0,1440,80
+
+# 3. Tolerate small height drift: compare the shared top region
+shotsweep diff old/manifest.json new/manifest.json --height-tolerance 40
+
+# 4. Tune sensitivity: per-pixel colour sensitivity (default 0.1; lower = stricter)
+shotsweep diff old/manifest.json new/manifest.json --pixel-threshold 0.05
+```
+
+| Flag | Command | What it does |
+| --- | --- | --- |
+| `--mask <css>` | `capture` | Repeatable. Paints over elements matching the selector, in every capture mode |
+| `--mask-color <css>` | `capture` | Colour of the mask boxes. Default is Playwright's pink `#FF00FF` |
+| `--ignore <x,y,w,h>` | `diff` | Repeatable. Excludes a pixel region from comparison |
+| `--height-tolerance <px>` | `diff` | Tolerates a height difference of up to N pixels |
+| `--pixel-threshold <0-1>` | `diff` | Per-pixel colour sensitivity. Lower is stricter. Default `0.1` |
+
+`--height-tolerance` only applies when the width is identical. Within the tolerance the shared top
+region is still compared pixel by pixel, so real changes are still caught. A larger height change is
+still reported as `size-changed`.
+
+## Ignore regions in the config file
+
+`--ignore` regions can also live in `shotsweep.config.json` as strings or objects, and be scoped to
+URLs containing some text:
+
+```json filename="shotsweep.config.json"
+{
+  "diff": {
+    "ignore": [
+      "0,0,1440,80",
+      { "x": 0, "y": 600, "width": 400, "height": 120, "url": "/pricing" }
+    ]
+  }
+}
+```
+
+This is different from [`--threshold`](/docs/visual-comparison/diff#threshold), which decides how
+much of the whole image may differ.

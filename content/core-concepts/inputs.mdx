@@ -48,6 +48,33 @@ Every invalid entry in a list is reported together, up front, before a browser s
 
 Duplicates are removed (`https://x.com` and `https://x.com/` count as one page).
 
+## URLs with `&` (query strings)
+
+A URL with several query parameters has to be **quoted** when you type it in a terminal. In
+Windows `cmd` and PowerShell, and in macOS/Linux shells, an unquoted `&` ends the command, so
+ShotSweep only receives the URL up to the first `&`:
+
+```bash filename="terminal"
+# captures only https://example.com/search?q=shoes
+shotsweep capture --url https://example.com/search?q=shoes&page=2&sort=asc
+
+# captures the whole URL
+shotsweep capture --url "https://example.com/search?q=shoes&page=2&sort=asc"
+```
+
+Use double quotes on Windows. Single quotes also work in PowerShell and in macOS/Linux shells,
+but not in `cmd`.
+
+URLs read from a file (`--urls`, `--csv`, `--paths`) or a sitemap don't need quoting, because the
+shell never sees them. Add `--dry-run` to check what will be captured:
+
+```bash filename="terminal"
+shotsweep capture --url "https://example.com/search?q=shoes&page=2" --dry-run
+```
+
+Pages that differ only in their query string get separate folders (a short hash is added to the
+folder name), so `?page=1` and `?page=2` don't overwrite each other.
+
 ## Input files
 
 `--urls` and `--paths` accept a JSON array of strings or a newline-delimited file. In a

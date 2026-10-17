@@ -72,6 +72,43 @@ when a page contains content that loads or expands after the initial render.
   note="The number of sections depends on the page's measured scroll height and the capture viewport. Use the debug output or manifest.json to inspect the sections produced by a run."
 />
 
+## Scroll capture
+
+```bash filename="terminal"
+shotsweep capture \
+  --url https://example.com \
+  --mode scroll \
+  --viewport 1440x900 \
+  --out ./baseline
+```
+
+Scroll mode takes one viewport-sized frame per scroll position, so a page whose animation is driven
+by scrolling is captured at every stage. Frames are named by scroll offset:
+
+```text
+baseline/example.com/home/
+├── scroll-y000000-1440x900.png
+├── scroll-y000450-1440x900.png
+├── scroll-y000900-1440x900.png
+└── scroll-end-1440x900.png
+```
+
+Run it again into another folder and `shotsweep diff` compares the same scroll positions. See
+[Scroll Capture](/docs/core-concepts/scroll-capture).
+
+## Hiding volatile content
+
+```bash filename="terminal"
+shotsweep capture \
+  --url https://example.com \
+  --mask ".ad-slot" \
+  --mask "[data-testid=clock]" \
+  --out ./screenshots
+```
+
+`--mask` paints over the matching elements before the screenshot, so a rotating banner or a clock
+can't fail a diff. See [Reducing False Positives](/docs/visual-comparison/reducing-false-positives).
+
 ## Capturing a whole sitemap
 
 ```bash filename="terminal"
