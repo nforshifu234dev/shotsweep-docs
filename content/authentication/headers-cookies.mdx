@@ -17,12 +17,14 @@ Sets `Authorization: Bearer <token>` on requests to the site being captured.
 
 ## Where credentials are sent
 
-`--bearer` and `--header` values go **only to the captured site and its subdomains**, never to
+`--bearer` and `--header` values go **only to the captured site, its subdomains and its `www.` twin**, never to
 third parties. A page loads fonts, analytics and assets from other hosts, and sending your token to
 all of them would leak it. A request counts as the same site when its host is the captured host,
-one of its subdomains, or its parent domain. Capturing `https://www.example.com` sends the token
-to `www.example.com`, `example.com` and `api.www.example.com`, but not to `fonts.googleapis.com`,
-`cdn.other.net`, or the sibling `app.example.com`. The port must match too, so `localhost:3000`
+one of its subdomains, or the captured host's `www.` twin (and the other way round). Parent and
+shared domains don't count. Capturing `https://www.example.com` sends the token to `www.example.com`,
+`example.com` and `api.www.example.com`, but not to `fonts.googleapis.com`, `cdn.other.net`, or the
+sibling `app.example.com`. Capturing `https://app.team.vercel.app` never sends your token to
+`vercel.app`, which belongs to every tenant. The port must match too, so `localhost:3000`
 credentials aren't sent to `localhost:4000`, and `localhost` and `127.0.0.1` are treated as
 different sites.
 

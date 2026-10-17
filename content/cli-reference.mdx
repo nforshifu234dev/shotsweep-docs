@@ -5,14 +5,15 @@ description: Every command and flag ShotSweep supports.
 
 # CLI reference
 
-ShotSweep's CLI lets you capture screenshots, reuse authenticated sessions, and compare capture runs for visual regressions. The reference below lists every command, flag, and default value, with examples for common workflows.
+ShotSweep's CLI lets you capture screenshots, reuse authenticated sessions, compare capture runs for visual regressions, and approve a run as the new baseline. The reference below lists every command, flag, and default value, with examples for common workflows.
 
 ```text
 shotsweep
 │
 ├── capture
 ├── login
-└── diff
+├── diff
+└── approve
 ```
 
 ## `shotsweep capture`
@@ -42,8 +43,9 @@ URLs don't need a scheme: `example.com` becomes `https://example.com` (`http://`
 
 | Flag | Description | Default |
 | --- | --- | --- |
-| `--mode <mode>` | `full`, `sections` or `element` | `full` |
+| `--mode <mode>` | `full`, `sections`, `element` or `scroll` | `full` |
 | `--selector <css>` | CSS selector of the single element to capture. **Required** with `--mode element` | — |
+| `--browser <name>` | Browser engine: `chromium`, `firefox` or `webkit`. Firefox and WebKit need `npx playwright install <name>` first, and only Chromium is covered by ShotSweep's tests | `chromium` |
 | `--viewport <WxH\|preset>` | Repeatable, e.g. `--viewport 1440x900` | `desktop` |
 | `--wait-until <domcontentloaded\|load\|networkidle>` | What counts as "page loaded" before capturing | `load` |
 | `--wait <ms\|selector>` | Wait a fixed ms or for a CSS selector, after `--wait-until` resolves. A selector that never appears is capped by `--timeout` and recorded as a warning | — |
@@ -55,6 +57,24 @@ URLs don't need a scheme: `example.com` becomes `https://example.com` (`http://`
 | `--ignore-https-errors` | Accept invalid or self-signed TLS certificates | `false` |
 | `--dark` | Emulate `prefers-color-scheme: dark` | `false` |
 | `--out <dir>` | Output directory | `./screenshots` |
+
+**Scroll capture** (with `--mode scroll`, see [Scroll Capture](/docs/core-concepts/scroll-capture))
+
+| Flag | Description | Default |
+| --- | --- | --- |
+| `--scroll-step <px\|%>` | Distance between frames, in pixels or as a percentage of the viewport height | `50%` |
+| `--scroll-stop <px\|%>` | Repeatable. Capture exactly these offsets (pixels, or `N%` of the scrollable range) instead of an even step | — |
+| `--scroll-method <auto\|native\|wheel>` | Scroll by the real scroll position, or by mouse-wheel events for pages that hijack the wheel | `auto` |
+| `--max-frames <n>` | Upper bound on frames per page and viewport | `60` |
+| `--frame-delay <ms>` | Minimum wait after each scroll before checking the frame has settled | `250` |
+| `--settle-timeout <ms>` | How long to wait for a frame to stop changing before keeping it anyway (`0` disables) | `3000` |
+
+**Volatile content**
+
+| Flag | Description |
+| --- | --- |
+| `--mask <css>` | Repeatable. Paint over elements matching this selector (ads, timestamps, carousels) so they can't cause false diffs |
+| `--mask-color <css>` | Colour of the mask boxes (default: Playwright's pink `#FF00FF`) |
 
 **Auth**
 
@@ -73,7 +93,7 @@ URLs don't need a scheme: `example.com` becomes `https://example.com` (`http://`
 | `--concurrency <n>` | Pages captured in parallel | `1` |
 | `--timeout <ms>` | Timeout for each page load, selector wait and screenshot | `30000` |
 | `--retries <n>` | Retry a failed page load this many times | `0` |
-| `--resume` | Skip full-page URL+viewport pairs already captured in `--out`'s manifest whose screenshot file still exists | `false` |
+| `--resume` | Skip jobs (any mode) whose latest attempt in `--out`'s manifest succeeded and whose screenshot files all still exist | `false` |
 
 **Output & scripting**
 
@@ -86,7 +106,7 @@ URLs don't need a scheme: `example.com` becomes `https://example.com` (`http://`
 | `--verbose` | Print one persistent line per completed job, instead of an overwriting spinner | `false` |
 | `--quiet` | Suppress the live progress line | `false` |
 | `--describe` | Print an AI-ready summary of the captured screenshots | `false` |
-| `--no-record` | Skip writing `run-record.json` (tool, browser and OS versions, resolved config, artifact hashes) | the record is written |
+| `--no-record` | Skip writing `run-record.json` (tool, browser and OS versions, resolved config, artifact hashes), at the root and in each site folder. The manifests are still written | the record is written |
 
 ## `shotsweep login`
 
@@ -101,6 +121,11 @@ Drive a login form once and save the session for reuse with `capture --session`.
 | `--email <value>` | No | Email/username (or set `SHOTSWEEP_EMAIL`) |
 | `--password <value>` | No | Password (or set `SHOTSWEEP_PASSWORD`) |
 | `--session-out <file>` | No | Where to save the session (default `./auth.json`) |
+| `--success-selector <css>` | No | An element that only exists once logged in. The session is saved only if it appears |
+| `--success-timeout <ms>` | No | How long to wait for `--success-selector` (default `10000`) |
+| `--browser <name>` | No | Browser engine: `chromium` (default), `firefox` or `webkit` |
+
+Prefer `SHOTSWEEP_PASSWORD` over `--password`: a flag is visible in the process list and shell history, and ShotSweep warns when you use it. See [Login Sessions](/docs/authentication/login-sessions).
 
 ## `shotsweep diff`
 
@@ -114,18 +139,43 @@ shotsweep diff <old-manifest> <new-manifest>
 | --- | --- | --- |
 | `--out <dir>` | Where to write diff images and the report | `./diff` |
 | `--threshold <ratio\|percent\|preset>` | Fraction of differing pixels before a page counts as changed — accepts `0.001`, `"0.1%"`, or `strict`/`default`/`loose` | `default` (`0.001`) |
+| `--pixel-threshold <0-1>` | Per-pixel colour sensitivity. Lower is stricter | `0.1` |
+| `--height-tolerance <px>` | Tolerate a height difference of up to N pixels (same width) by comparing the shared top region | `0` |
+| `--ignore <x,y,w,h>` | Repeatable. Exclude a pixel region from comparison | — |
+| `--fail-on-removed` | Fail when pages in the old run are missing from the new one | `false` |
+| `--fail-on-added` | Fail when the new run contains pages that weren't in the old one | `false` |
 | `--zip` | Also bundle the diff output into a `.zip` when done | `false` |
 | `--json` | Print the summary as JSON instead of colored output | `false` |
 | `--summary` | Print a human-readable visual regression summary | `false` |
 | `--text <file>` | Write the human-readable summary to a text file | — |
 
 See [Diffing Two Runs](/docs/visual-comparison/diff) for thresholds, regression
-policy, reports, and exit-code behavior.
+policy, reports, and exit-code behavior, and
+[Reducing False Positives](/docs/visual-comparison/reducing-false-positives) for `--ignore`,
+`--height-tolerance` and `--pixel-threshold`.
+
+## `shotsweep approve`
+
+Promote a reviewed run to be the new baseline.
+
+```bash filename="terminal"
+shotsweep approve <manifest> --to <dir>
+```
+
+| Flag | Description |
+| --- | --- |
+| `--to <dir>` | Baseline folder to write into (created if needed). **Required** |
+| `--from-report <file>` | Only promote the pages this `diff-report.json` flagged as changed, resized or added |
+| `--dry-run` | Show what would be promoted without copying anything |
+| `--json` | Print the result as JSON |
+
+Failed captures are never promoted, every approval is logged to `approvals.json`, and the command
+exits non-zero if nothing was promoted. See [Approving Baselines](/docs/visual-comparison/baselines).
 
 ## Config file
 
 Drop a `shotsweep.config.json` or `.shotsweeprc.json` in your project so `shotsweep capture`
-and `shotsweep diff` run with fewer flags.
+and `shotsweep diff` run with fewer flags. For scroll capture the keys are camelCase: `scrollStep`, `scrollStop`, `scrollMethod`, `maxFrames`, `frameDelay`, `settleTimeout`.
 
 ```json filename="shotsweep.config.json"
 {

@@ -7,6 +7,62 @@ description: Version history for NFSFU234 ShotSweep.
 
 All notable changes to the NFSFU234 ShotSweep Library will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and adheres to Semantic Versioning.
 
+## [1.4.0] — Scroll capture, baselines and a stricter diff
+
+### Added
+
+* `--mode scroll`: capture a scroll-driven page as a series of viewport frames, one per scroll
+  position, each taken once the page has stopped moving (scroll position first, then pixels).
+  For pinned sections, GSAP ScrollTrigger scrubs, `animation-timeline: scroll()` and
+  smooth-scroll libraries, where a full-page screenshot never plays the animation.
+  * `--scroll-step <px|%>` sets the distance between frames (default half a viewport), or
+    `--scroll-stop <px|%>` (repeatable) captures exactly the offsets you name; `100%` is the very bottom.
+  * `--scroll-method <auto|native|wheel>`: `wheel` drives pages that hijack the mouse wheel;
+    `auto` uses it only when nothing scrolls natively.
+  * `--max-frames`, `--frame-delay` and `--settle-timeout` bound and tune the settling.
+  * Frames are named by scroll offset (`scroll-y000450-1440x900.png`, `scroll-end-1440x900.png`),
+    so `diff` compares the same moment of the animation on every run. Manifest entries record
+    `scrollY` and `scrollMethod`, and `settled: false` for frames that never stopped changing.
+* Every site folder now has its own `manifest.json` and `run-record.json` (paths relative to that
+  folder), while the root keeps the complete manifest. A site folder can be copied or moved on its
+  own and still be diffed or approved.
+* `shotsweep approve <manifest> --to <dir>` promotes a run to be the new baseline. `--from-report`
+  promotes only the pages a diff flagged, `--dry-run` previews, and every approval is appended to
+  `approvals.json` with SHA-256 hashes. Failed captures are never promoted.
+* `capture --mask <css>` (repeatable) and `--mask-color` paint over volatile elements (ads,
+  timestamps, carousels) in `full`, `sections`, `element` and `scroll` captures.
+* `diff --ignore x,y,w,h` (repeatable, or objects in the config file, optionally scoped to a URL),
+  `--height-tolerance <px>` and `--pixel-threshold <0-1>` to cut false positives.
+* `diff --fail-on-removed` and `--fail-on-added` to fail the run on pages present in only one run.
+* `login --success-selector <css>` saves the session only if that element appears, and
+  `--success-timeout` sets how long to wait. Without it, `login` warns when the password field is
+  still showing after submit.
+* `--browser <chromium|firefox|webkit>` on `capture` and `login`. The engine is recorded in
+  `run-record.json`, and `diff` reports a change of engine as environment drift. Only Chromium is
+  covered by the test suite; Firefox and WebKit need `npx playwright install firefox` (or `webkit`).
+* `--describe` includes scroll-frame counts.
+
+### Changed
+
+* `diff` now treats a page that failed to capture in the new run as a regression
+  (`capture-failed`). Before, it was reported as `removed`, which passes, so a failed capture could
+  turn a CI check green. The newest attempt for a page decides, so a stale earlier screenshot in a
+  merged manifest no longer hides a fresh failure.
+* `--bearer` and `--header` are no longer sent to parent domains. `app.example.com` still shares
+  credentials with its own subdomains and its `www.` twin, but a token for `app.team.vercel.app` no
+  longer goes to `vercel.app`. Use `--headers-all-origins` if you need the old reach.
+* `--resume` now works for `sections`, `element` and `scroll` jobs, not just `full`. A job is skipped only if
+  its latest attempt succeeded and every file it wrote still exists.
+* A warning that applies to a whole page is printed once per page, not once per screenshot.
+* `run-record.json` records the real browser engine instead of always `chromium`.
+
+### Fixed
+
+* A 1px change in page height no longer has to be a hard failure; use `--height-tolerance`.
+* `--password` on the command line now warns that it is visible in the process list.
+
+See [Upgrading to 1.4](/docs/upgrading) for behaviour changes that can affect existing pipelines.
+
 ## [1.3.0] — Scroll-reveal capture and hardening
 
 ### Added

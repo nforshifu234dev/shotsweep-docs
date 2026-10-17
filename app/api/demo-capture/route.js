@@ -10,7 +10,13 @@ const TARGETS = {
   nfsfu234dev: 'NFORSHIFU234 Dev'
 }
 
+// Capture modes the demo offers. The worker maps each one to its own CLI flags,
+// so only these keys are ever forwarded.
+const MODES = ['viewport', 'full', 'sections', 'scroll']
+const DEFAULT_MODE = 'viewport'
+
 const CACHE_TTL_MS = 30 * 60 * 1000
+const CACHE_MAX_ENTRIES = 40
 const RATE_LIMIT_WINDOW_MS = 60 * 1000
 const RATE_LIMIT_MAX = 5
 
@@ -68,6 +74,7 @@ export async function POST(request) {
 
   const key = body?.target
   const label = TARGETS[key]
+  const mode = body?.mode ?? DEFAULT_MODE
 
   if (!label) {
     return Response.json(
@@ -76,12 +83,21 @@ export async function POST(request) {
     )
   }
 
-  const cached = cache.get(key)
+  if (!MODES.includes(mode)) {
+    return Response.json(
+      { error: 'Unknown mode. Pick one of the provided options.' },
+      { status: 400 }
+    )
+  }
+
+  const cacheKey = `${key}:${mode}`
+  const cached = cache.get(cacheKey)
 
   if (cached && cached.expiresAt > Date.now()) {
     return Response.json({
-      dataUrl: cached.dataUrl,
+      ...cached.payload,
       label,
+      mode,
       cached: true
     })
   }
@@ -108,7 +124,8 @@ export async function POST(request) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          target: key
+          target: key,
+          mode
         }),
         cache: 'no-store'
       }
@@ -131,14 +148,26 @@ export async function POST(request) {
       )
     }
 
-    cache.set(key, {
+    // `frames` is only present for multi-frame modes (sections, scroll);
+    // `dataUrl` is always the first frame.
+    const payload = {
       dataUrl: result.dataUrl,
+      ...(Array.isArray(result.frames) ? { frames: result.frames, truncated: Boolean(result.truncated) } : {})
+    }
+
+    if (cache.size >= CACHE_MAX_ENTRIES) {
+      cache.delete(cache.keys().next().value)
+    }
+
+    cache.set(cacheKey, {
+      payload,
       expiresAt: Date.now() + CACHE_TTL_MS
     })
 
     return Response.json({
-      dataUrl: result.dataUrl,
+      ...payload,
       label: result.label || label,
+      mode,
       cached: false
     })
   } catch (error) {

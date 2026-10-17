@@ -22,7 +22,8 @@ Changed images + report
 ```
 
 `shotsweep diff` matches screenshots between the two manifests by URL and viewport, then
-pixel-diffs each pair.
+pixel-diffs each pair. Scroll frames are matched by scroll offset (`scroll-y000450-…`), and a site
+folder's own `manifest.json` can be diffed on its own.
 
 Every changed page gets its own folder under `--out`, containing:
 
@@ -81,6 +82,7 @@ Each matched or unmatched screenshot resolves to one status:
 | `removed`      | Present in the old manifest only              |
 | `size-changed` | Image dimensions differ between runs          |
 | `error`        | A screenshot couldn't be compared (missing file or not a valid PNG) |
+| `capture-failed` | The page failed to capture in the **new** run |
 
 ## Regression policy
 
@@ -93,6 +95,7 @@ By default, the following policy is used:
 | `changed`      | Yes        | ❌ Fail    |
 | `size-changed` | Yes        | ❌ Fail    |
 | `error`        | Yes        | ❌ Fail    |
+| `capture-failed` | Yes      | ❌ Fail    |
 | `unchanged`    | No         | ✅ Pass    |
 | `added`        | No         | ✅ Pass    |
 | `removed`      | No         | ✅ Pass    |
@@ -103,9 +106,19 @@ An `error` result means a screenshot listed in a manifest was missing or unreada
 couldn't be compared. It is reported for that page and **fails the run**: a page that couldn't be
 checked is not a page that passed.
 
+A `capture-failed` result means the page failed to capture in the new run. It fails the run: a page
+that couldn't be captured is not a page that passed, and it is not a page that quietly disappeared.
+The newest attempt decides, so a stale screenshot left in a merged manifest can't hide a fresh
+failure.
+
 Added and removed pages are reported in `diff-report.json` but do not fail the
 diff by default. This allows intentional additions and removals to be reviewed
-without making every site-structure change a visual-regression failure.
+without making every site-structure change a visual-regression failure. Make them fail with
+`--fail-on-added` and `--fail-on-removed`:
+
+```bash filename="terminal"
+shotsweep diff old/manifest.json new/manifest.json --fail-on-removed --fail-on-added
+```
 
 For example:
 
@@ -124,7 +137,8 @@ Visual regression summary
 
 In this example, the diff exits with code `1` because there is one changed page
 and one resized page. When a page couldn't be compared, the summary adds an
-`Errors : N (could not be compared)` line, and those pages count toward the regression total.
+`Errors : N (could not be compared)` line, and when the new run couldn't capture a page it adds
+`Capture failed : N`. Both count toward the regression total.
 
 A run containing only added or removed pages exits successfully:
 
@@ -145,12 +159,19 @@ This policy is intended to work well both locally and in CI/CD pipelines.
 Teams can inspect added or removed pages while still using `changed` and
 `size-changed` as the default merge-blocking visual failures.
 
+## Cutting false positives
+
+`--ignore`, `--height-tolerance` and `--pixel-threshold` keep volatile content from failing a diff,
+and `capture --mask` hides it before the screenshot. See
+[Reducing False Positives](/docs/visual-comparison/reducing-false-positives). When the changes are
+intended, [approve them](/docs/visual-comparison/baselines).
+
 ## Environment drift
 
 A pixel difference isn't always a page change: a different Chromium version, operating system or
 font renderer can shift text by a pixel. When both manifests have a `run-record.json` next to them
 (written by `capture` unless you pass `--no-record`), `diff` compares the tool, Playwright,
-Chromium and Node versions and the OS and architecture of the two runs, and warns if any differ:
+browser (and engine) and Node versions and the OS and architecture of the two runs, and warns if any differ:
 
 ```text
 ⚠ Environment drift detected between baseline and current run — this diff's verdict may reflect
@@ -169,12 +190,12 @@ screenshots even when a manifest has been moved to another folder, copied from a
 written on Windows and read on Linux. Pages are matched by URL and viewport, so
 `https://example.com` and `https://example.com/` are the same page.
 
-## Re-baseline after upgrading to 1.3
+## Re-baseline after upgrading
 
 ShotSweep 1.3 scrolls pages before capturing, so scroll-reveal content now appears where earlier
 versions captured blank areas. A baseline captured with an older version will therefore differ from
 a new capture of the same unchanged page. Capture a fresh baseline with the new version before
-comparing. See [Upgrading to 1.3](/docs/upgrading).
+comparing. See [Upgrading](/docs/upgrading).
 
 ## Summary output
 
@@ -233,16 +254,18 @@ See [JSON Output](/docs/automation/json-output).
 
 ## Exit code
 
-`diff` exits non-zero when the run contains any `changed`, `size-changed` or `error`
-result.
+`diff` exits non-zero when the run contains any `changed`, `size-changed`, `error` or
+`capture-failed` result.
 
-`added` and `removed` results are reported but do not fail the diff by default.
+`added` and `removed` results are reported but do not fail the diff by default (see
+`--fail-on-added` and `--fail-on-removed`).
 
 This makes the default CI policy:
 
 * `changed` → fail
 * `size-changed` → fail
 * `error` → fail
+* `capture-failed` → fail
 * `unchanged` → pass
 * `added` → pass
 * `removed` → pass

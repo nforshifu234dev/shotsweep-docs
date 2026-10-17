@@ -40,6 +40,18 @@ authenticated screenshots
 `login` requires `--login-url`, `--email-selector`, `--password-selector`, and
 `--submit-selector` — all four are CSS selectors ShotSweep uses to fill and submit the form.
 
+## Confirm the login worked
+
+Pass an element that only exists once you're logged in. The session is saved only if it appears, so
+a wrong password can't silently produce a session that screenshots the login page for every URL:
+
+```bash filename="terminal"
+shotsweep login ... --success-selector "[data-testid=user-menu]" --success-timeout 15000
+```
+
+`--success-timeout` is how long to wait (default 10 seconds). Without `--success-selector`,
+ShotSweep still warns when the password field is still visible on the same URL after submitting.
+
 ## Credentials from the environment
 
 Instead of passing `--email` / `--password` on the command line, you can set:
@@ -49,7 +61,13 @@ export SHOTSWEEP_EMAIL=you@example.com
 export SHOTSWEEP_PASSWORD=your-password
 ```
 
+Prefer the environment variables to `--password`: a flag is visible in the process list and your
+shell history, and ShotSweep warns when you use it.
+
 `shotsweep login` saves the file readable by your user only (on macOS and Linux).
+
+`login` also accepts `--browser <chromium|firefox|webkit>`, so the session is made in the same engine
+you capture with.
 
 ## Don't commit your session file
 

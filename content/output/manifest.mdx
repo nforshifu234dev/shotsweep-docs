@@ -5,7 +5,7 @@ description: manifest.json is the machine-readable record of a ShotSweep capture
 
 # The manifest
 
-Every `capture` run writes a `manifest.json` into `--out`. It's the machine-readable record the
+Every `capture` run writes a `manifest.json` into `--out`, and one into each site folder. It's the machine-readable record the
 rest of ShotSweep — and your own tooling — builds on: `diff` matches entries by URL and viewport,
 `--describe` summarizes it, and CI scripts can parse it directly.
 
@@ -42,10 +42,44 @@ Successful entries have `file` and `sizeBytes`; failed entries have `error` inst
 - `warnings` — present when a page was captured with a caveat, such as a `load` timeout or images
   that didn't finish. The capture still succeeded.
 - `selector` — present on `--mode element` entries.
+- `scrollY`, `scrollMethod` and `settled` — present on `--mode scroll` entries: the frame's scroll
+  offset, how it was reached (`native` or `wheel`), and `false` when the frame never stopped
+  changing (a looping animation). See [Scroll Capture](/docs/core-concepts/scroll-capture).
 
 `file` always uses forward slashes, even when captured on Windows, so a manifest from one machine
 can be compared on another (for example `diff` in Linux CI). Any `user:password@` in a URL is
 masked.
+
+### Per-site folders
+
+The root keeps the complete data, and every site folder carries its own copy of the data describing
+it:
+
+```text
+screenshots/
+  manifest.json            <- every entry (what diff, --resume and approve read)
+  run-record.json          <- the run's full provenance
+  example.com/
+    manifest.json          <- only this site's entries, paths relative to this folder
+    run-record.json        <- this site's slice of the provenance (same browser/OS fingerprint)
+    home/full-1440x900.png
+  localhost_3000/
+    manifest.json
+    run-record.json
+    ...
+```
+
+A site folder is self-contained: copy or move it anywhere and its data goes with it, and it can be
+used on its own:
+
+```bash filename="terminal"
+shotsweep diff old/example.com/manifest.json new/example.com/manifest.json
+shotsweep approve screenshots/example.com/manifest.json --to baseline
+```
+
+Per-site files are rewritten from the merged root manifest on every run, so they never drift from
+it. A site whose every page failed still gets its folder, with the errors recorded. `--no-record`
+skips the `run-record.json` files but not the manifests.
 
 ### How repeated runs merge
 
@@ -65,8 +99,12 @@ fresh one is started, rather than being overwritten.
 ## The run record
 
 Unless you pass `--no-record`, each run also writes `run-record.json` next to the manifest: a
-snapshot of the tool version, Playwright and Chromium versions, Node version, OS and architecture,
-the resolved configuration, and a SHA-256 hash of every screenshot from that run.
+snapshot of the tool version, Playwright and browser versions, Node version, OS and architecture,
+the resolved configuration, and a SHA-256 hash of every screenshot from that run. The record names
+the browser engine that was actually used (`chromium`, `firefox` or `webkit`).
+
+A site folder's record has the same fingerprint, a `scope: { "site": "<folder>" }` marker, and only
+that site's artifacts, with paths relative to the folder.
 
 `--bearer`, `--header`, `--cookie` and `--session` are recorded as `[REDACTED]`, and credentials
 inside URLs are masked. `shotsweep diff` reads the record to flag

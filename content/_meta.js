@@ -13,5 +13,5 @@ export default {
   'cli-reference': 'CLI Reference',
   troubleshooting: 'Troubleshooting',
   changelog: 'Changelog',
-  upgrading: 'Upgrading to 1.3'
+  upgrading: 'Upgrading'
 }

@@ -35,7 +35,15 @@ separately as **warnings** and don't fail the run.
 | No screenshots produced, run exits with "No URLs resolved" | Input source (sitemap, CSV, paths file) resolved to zero URLs | Run with `--dry-run` to see exactly what was resolved |
 | Auth pages capture a login screen instead of content | Session file is stale, or the wrong auth flag was used | Re-run `shotsweep login` to refresh `auth.json` |
 | `--cookie` throws "needs a Domain=... attribute" | A cookie flag was passed without `; Domain=...` | Add the domain, e.g. `"session=xyz; Domain=example.com"` |
+| Scroll capture: every frame is identical | The page reacts to the mouse wheel, not the scroll position | Re-run with `--scroll-method wheel`. See [Scroll Capture](/docs/core-concepts/scroll-capture#things-worth-knowing) |
+| Scroll capture: `frame(s) never stopped changing` (a warning) | A looping animation, video or carousel is on screen | Use `--freeze-animations`, or `--mask <css>` on the moving element. The frames are kept and flagged `settled: false` |
+| Scroll capture: a warning that the page is cut off at `--max-frames` | The page is taller than `--max-frames` frames at that step | Raise `--max-frames` or `--scroll-step` |
+| `diff` fails with `capture-failed` | The page failed to capture in the **new** run. Before 1.4 it showed up as `removed` and passed | Fix the failure (see the error printed under the capture summary), then capture again |
+| `diff` fails on a 1–2px height difference | The page is a few pixels taller than the baseline | Use `--height-tolerance`. See [Reducing False Positives](/docs/visual-comparison/reducing-false-positives) |
+| A clock, ad or carousel makes every diff fail | Volatile content changes on every load | Use `--mask` at capture time, or `--ignore` at diff time |
+| `--browser firefox` or `webkit` fails to launch | That browser isn't installed for Playwright | Run `npx playwright install firefox` (or `webkit`). Only Chromium is covered by ShotSweep's tests |
 | Capture is slower than expected, or pages start timing out under `--concurrency` | Concurrency set above your CPU core count | Lower `--concurrency`, or accept the warning ShotSweep prints |
+| Only the first query parameter is captured (`?a=1&b=2` becomes `?a=1`) | The shell treated `&` as the end of the command | Quote the URL: `--url "https://example.com/?a=1&b=2"`. See [URLs with `&`](/docs/core-concepts/inputs#urls-with--query-strings) |
 
 ## Get the real browser error
 

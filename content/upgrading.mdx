@@ -1,18 +1,49 @@
 ---
-title: Upgrading to 1.3
-description: What changed in ShotSweep 1.3 that can affect existing captures, baselines and CI.
+title: Upgrading
+description: What changed in ShotSweep 1.4 and 1.3 that can affect existing captures, baselines and CI.
 ---
 
-# Upgrading to 1.3
+# Upgrading
 
 ```bash filename="terminal"
 npm install -g @nfsfu234/shotsweep@latest
 ```
 
+## Upgrading to 1.4
+
+No command or flag was removed in 1.4. A few behaviours changed, and the first two can change the
+result of an existing CI pipeline.
+
+| Change | What you may notice | What to do |
+| --- | --- | --- |
+| A page that failed to capture in the new run **fails `diff`** | A run that used to pass, because the page was reported as `removed`, now exits `1` with `capture-failed` | Fix the capture failure. The reason is printed under the `capture` summary. See [Diffing Two Runs](/docs/visual-comparison/diff#result-statuses) |
+| `--bearer` and `--header` **no longer go to parent domains** | A token for `app.team.vercel.app` is no longer sent to `vercel.app`. Subdomains and the `www.` twin still match | Add `--headers-all-origins` if an API genuinely needs it. See [Where credentials are sent](/docs/authentication/headers-cookies#where-credentials-are-sent) |
+| **`--resume`** covers `sections`, `element` and `scroll` jobs | Those jobs are skipped when complete instead of always re-captured. A newer failure now beats an older success | Nothing, unless you relied on `sections` always re-running |
+| **`run-record.json`** names the real browser engine | `diff` reports a change of engine as environment drift | Capture the baseline and the current run with the same `--browser` |
+| A warning that applies to a whole page is **printed once** | Fewer repeated lines under the run summary | Nothing |
+| Every **site folder has its own** `manifest.json` and `run-record.json` | New files appear in each `<host>/` folder. The root files are unchanged | Nothing. Scripts that read the root `manifest.json` keep working |
+
+Existing baselines stay valid. You only need to re-capture them if `diff` reports environment drift
+you care about.
+
+## New in 1.4
+
+- [Scroll capture](/docs/core-concepts/scroll-capture) (`--mode scroll`) for scroll-driven animation
+- [Per-site folders](/docs/output/manifest#per-site-folders): a carried site folder keeps its metadata
+- [`shotsweep approve`](/docs/visual-comparison/baselines) to promote a reviewed run to the baseline
+- [`--mask`, `--ignore`, `--height-tolerance` and `--pixel-threshold`](/docs/visual-comparison/reducing-false-positives)
+- `--fail-on-added` and `--fail-on-removed` on `diff`
+- `login --success-selector` and `--success-timeout`
+- `--browser <chromium|firefox|webkit>` (only Chromium is covered by tests)
+
+See the [changelog](/docs/changelog#140--scroll-capture-baselines-and-a-stricter-diff) for the full list.
+
+## Upgrading to 1.3
+
 No command or flag was removed in 1.3. A few defaults changed, though, and they can change what
 your existing runs produce.
 
-## What may behave differently
+### What may behave differently
 
 | Change | What you may notice | What to do |
 | --- | --- | --- |
@@ -25,7 +56,7 @@ your existing runs produce.
 | `diff` counts unreadable screenshots as **errors** | A missing or corrupt screenshot now fails the diff instead of crashing it | Nothing, unless you relied on the crash |
 | A broken `shotsweep.config.json` **stops the run** | A config typo is no longer silently ignored | Fix the file. Unknown keys are warnings |
 
-## Re-baselining
+### Re-baselining
 
 If you run `shotsweep diff` in CI against a stored baseline, capture a new baseline with 1.3 and
 commit or upload it before relying on diffs again:
@@ -37,7 +68,7 @@ shotsweep capture --sitemap https://example.com/sitemap.xml --out ./screenshots/
 Keep the baseline and the current run on the same ShotSweep version and runner image.
 [Environment drift](/docs/visual-comparison/diff#environment-drift) warns when they differ.
 
-## New in 1.3
+### New in 1.3
 
 - [Scroll warm-up](/docs/core-concepts/capture#scroll-warm-up) and
   [image waiting](/docs/core-concepts/capture#images-that-dont-finish-loading)

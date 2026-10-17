@@ -25,11 +25,13 @@ shotsweep capture --url https://example.com --json
   "manifestPath": "screenshots/manifest.json",
   "zipPath": null,
   "recordPath": "screenshots/run-record.json",
+  "sites": ["example.com"],
   "failures": []
 }
 ```
 
-`failures` lists each failed page as `{ "url", "viewport", "error" }`, so a script can report why
+`sites` lists the site folders written under `--out`; each has its own `manifest.json` and
+`run-record.json` (see [The Manifest](/docs/output/manifest#per-site-folders)). `failures` lists each failed page as `{ "url", "viewport", "error" }`, so a script can report why
 without opening the manifest. `warnings` counts pages captured with a caveat (see
 [Troubleshooting](/docs/troubleshooting)); it doesn't affect the exit code.
 
@@ -55,6 +57,7 @@ Example:
     "removed": 0,
     "sizeChanged": 0,
     "errors": 0,
+    "captureFailed": 0,
     "regressions": 2
   },
   "reportPath": "diff/diff-report.json",
@@ -68,10 +71,27 @@ The `regressions` value represents the number of results that currently count as
 
 By default:
 
-    regressions = changed + sizeChanged + errors
+    regressions = changed + sizeChanged + errors + captureFailed
 
-`added` and `removed` are reported separately and do not contribute to the regression count.
-`errors` counts pages whose screenshots couldn't be compared.
+`added` and `removed` are reported separately and do not contribute to the regression count,
+unless you pass `--fail-on-added` or `--fail-on-removed`.
+`errors` counts pages whose screenshots couldn't be compared, and `captureFailed` counts pages that
+failed to capture in the new run.
+
+## Approve
+
+`approve` also supports `--json`:
+
+```bash filename="terminal"
+shotsweep approve screenshots/manifest.json --to baseline --json
+```
+
+```json filename="output"
+{ "dryRun": false, "promoted": 12, "skipped": 0, "manifestPath": "baseline/manifest.json" }
+```
+
+`skipped` counts pages left as they were (for example, those a `--from-report` didn't flag, or
+whose latest capture failed). The exit code is non-zero if nothing was promoted.
 
 ## Text output for humans
 

@@ -59,6 +59,7 @@ ShotSweep's default CI policy is:
 | `changed` | Yes |
 | `size-changed` | Yes |
 | `error` | Yes |
+| `capture-failed` | Yes |
 | `unchanged` | No |
 | `added` | No |
 | `removed` | No |
@@ -68,10 +69,11 @@ Therefore:
 - A genuine visual change fails the step.
 - A screenshot resize fails the step.
 - A page whose screenshots couldn't be compared fails the step.
+- A page that failed to capture in the new run fails the step. It can't turn the check green by going missing.
 - An intentionally added page does not fail the step.
 - An intentionally removed page does not fail the step.
 
-Added and removed pages are still included in the diff report.
+Added and removed pages are still included in the diff report. Use `--fail-on-added` and `--fail-on-removed` if a structural change should block the merge too.
 
 ## Threshold vs regression policy
 
@@ -126,7 +128,7 @@ when needed.
 Both commands are designed to gate a pipeline:
 
 - `capture` sets a non-zero exit code if any page failed to capture.
-- `diff` sets a non-zero exit code when `changed`, `size-changed` or `error` results are present.
+- `diff` sets a non-zero exit code when `changed`, `size-changed`, `error` or `capture-failed` results are present.
 - `added` and `removed` results do not fail the build by default.
 
 This allows CI to use the process exit code as the gate while using JSON, text, and the diff
@@ -203,10 +205,23 @@ helps most there. `actions/setup-node` with `cache: npm` also speeds up `npm ci`
 Capture the baseline and the current run with the **same ShotSweep version and the same runner
 image**. `diff` warns about [environment drift](/docs/visual-comparison/diff#environment-drift)
 when they differ, and renderer differences can look like page changes. After upgrading ShotSweep,
-re-capture the baseline (see [Upgrading to 1.3](/docs/upgrading)).
+re-capture the baseline (see [Upgrading](/docs/upgrading)).
+
+## Accepting intended changes
+
+When a failing diff is the change you meant to ship, promote the new run to be the baseline instead
+of editing screenshots by hand:
+
+```bash filename="terminal"
+shotsweep approve screenshots/manifest.json --to baseline --from-report diff/diff-report.json
+```
+
+Every approval is recorded in `baseline/approvals.json`. See
+[Approving Baselines](/docs/visual-comparison/baselines). To keep volatile content from failing the
+build in the first place, see [Reducing False Positives](/docs/visual-comparison/reducing-false-positives).
 
 ## Don't send tokens to third parties
 
 In CI you often pass `--bearer $TOKEN` or `--header`. These go only to the site being captured and
-its subdomains, never to the fonts, analytics or CDN hosts the page loads. See
+its subdomains and `www.` twin, never to the fonts, analytics or CDN hosts the page loads. See
 [Where credentials are sent](/docs/authentication/headers-cookies#where-credentials-are-sent).

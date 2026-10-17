@@ -1116,6 +1116,26 @@
   cursor: not-allowed;
 }
 
+.demo-mode-hint {
+  margin: -0.5rem 0 0.5rem;
+  font-size: 12px;
+  color: var(--land-text-mute-2);
+}
+
+.demo-command {
+  display: block;
+  margin-bottom: 1.25rem;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--land-border);
+  background: var(--land-surface-soft);
+  color: var(--land-text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+  word-break: break-all;
+  white-space: normal;
+}
+
 .demo-run-btn {
   padding: 11px 16px;
   border-radius: 10px;
@@ -1246,6 +1266,17 @@
   width: 100%;
   border-radius: 8px;
   border: 1px solid var(--land-border-strong);
+}
+
+.demo-frame-single {
+  width: 100%;
+}
+
+.demo-frames {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
 }
 
 .demo-output-caption {
